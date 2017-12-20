@@ -58,6 +58,9 @@
 #define PLUGIN_NAME_061       "Keypad - PCF8574 / MCP23017 [TESTING]"
 #define PLUGIN_VALUENAME1_061 "ScanCode"
 
+#define P61_ROW 0x0F
+#define P61_COL 0xF0
+
 // #include <*.h>   // no include needed
 #include "_Plugin_Helper.h"
 
@@ -301,43 +304,34 @@ void PCF8574_KeyPadMatrixInit(byte addr)
 	PCF8574_setReg(addr, 0xF0);   // low nibble to output 0
 }
 
+byte PCF8574_KeyPadMatrixRead(byte addr, byte rowcol) {
+  PCF8574_setReg(addr, rowcol);
+  byte data = PCF8574_getReg(addr) & rowcol;
+  if (data == rowcol)   // no key pressed?
+		return 0;   // no key pressed!
+  if (rowcol == P61_COL) {
+    // Move to lower 4 bits.
+    data >>= 4;
+  }
+  switch (data) {
+    case 0x0E: return 1; // 1110
+    case 0x0D: return 2; // 1101
+    case 0x0B: return 3; // 1011
+    case 0x07: return 4; // 0111
+  }
+  // More than one key was pressed.
+  return 0;
+}
+
 byte PCF8574_KeyPadMatrixScan(byte addr)
 {
-	byte rowMask = 1;
-	byte colData;
-
-	colData = PCF8574_getReg(addr) & 0xF0;
-	if (colData == 0xF0)   // no key pressed?
-		return 0;   // no key pressed!
-
-	for (byte row = 0; row <= 4; row++)
-	{
-    if (row == 0)
-      PCF8574_setReg(addr, 0xFF);   // no bit of port A to output
-    else
-    {
-      PCF8574_setReg(addr, ~rowMask);   // one bit of port A to output 0
-      rowMask <<= 1;
-    }
-
-    colData = PCF8574_getReg(addr) & 0xF0;
-		if (colData != 0xF0)   // any key pressed?
-		{
-			byte colMask = 0x10;
-			for (byte col = 1; col <= 4; col++)
-			{
-				if ((colData & colMask) == 0)   // this key pressed?
-				{
-					PCF8574_setReg(addr, 0xF0);   // low nibble to output 0
-					return ((row << 4) | col);
-				}
-				colMask <<= 1;
-			}
-		}
-	}
-
-	PCF8574_setReg(addr, 0xF0);   // low nibble to output 0
-	return 0;   // no key pressed!
+  const byte row = PCF8574_KeyPadMatrixRead(addr, P61_ROW);
+  const byte col = PCF8574_KeyPadMatrixRead(addr, P61_COL);
+  if (row == 0 || col == 0) {
+    // Undetermined row or column, so during scan the key was not connected.
+    return 0;
+  }
+  return ((row << 4) | col);
 }
 
 // PCF8574 Direct //////////////////////////////////////////////////////////////
