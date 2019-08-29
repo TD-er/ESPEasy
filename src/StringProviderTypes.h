@@ -18,8 +18,17 @@ enum Enum : short {
   LOOP_COUNT,                  // 400
   CPU_ECO_MODE,                // true
 
-  FREE_MEM,                    // 9876
+  FREE_HEAP,                    // 9876
   FREE_STACK,                  // 3456
+#ifdef ESP32
+  HEAP_SIZE,                   // Internal heap size
+#endif
+#ifdef BOARD_HAS_PSRAM
+  PSRAM_SIZE,
+  PSRAM_FREE,
+#endif
+
+
 #ifdef CORE_POST_2_5_0
   HEAP_MAX_FREE_BLOCK,         // 7654
   HEAP_FRAGMENTATION,          // 12

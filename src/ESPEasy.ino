@@ -14,6 +14,9 @@
   #endif
 #endif
 
+#ifdef ESP32
+//#include "mallocator.h"
+#endif
 
 /****************************************************************************************************************************\
  * Arduino project "ESP Easy" © Copyright www.letscontrolit.com

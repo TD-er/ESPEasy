@@ -292,7 +292,14 @@ void handle_sysinfo_basicInfo() {
   addRowLabelValue(LabelType::HEAP_MAX_FREE_BLOCK);
   addRowLabelValue(LabelType::HEAP_FRAGMENTATION);
   addHtml("%");
-# endif // ifdef CORE_POST_2_5_0
+#endif // ifdef CORE_POST_2_5_0
+#ifdef ESP32
+  addRowLabelValue(LabelType::HEAP_SIZE);
+#endif
+#ifdef BOARD_HAS_PSRAM
+  addRowLabelValue(LabelType::PSRAM_SIZE);
+  addRowLabelValue(LabelType::PSRAM_FREE);
+#endif
 
 
   addRowLabel(F("Boot"));

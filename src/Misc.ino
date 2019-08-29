@@ -1287,7 +1287,11 @@ unsigned long FreeMem(void)
     return system_get_free_heap_size();
   #endif
   #if defined(ESP32)
-    return ESP.getFreeHeap();
+    #ifdef BOARD_HAS_PSRAM
+      return ESP.getFreePsram();
+    #else
+      return ESP.getFreeHeap();      
+    #endif
   #endif
 }
 

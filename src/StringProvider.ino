@@ -17,8 +17,15 @@ String getLabel(LabelType::Enum label) {
     case LabelType::LOOP_COUNT:             return F("Load LC");
     case LabelType::CPU_ECO_MODE:           return F("CPU Eco Mode");
 
-    case LabelType::FREE_MEM:               return F("Free RAM");
+    case LabelType::FREE_HEAP:              return F("Free RAM");
     case LabelType::FREE_STACK:             return F("Free Stack");
+#ifdef ESP32
+    case LabelType::HEAP_SIZE:              return F("Heap Size");
+#endif
+#ifdef BOARD_HAS_PSRAM
+    case LabelType::PSRAM_SIZE:             return F("PSRAM Size");
+    case LabelType::PSRAM_FREE:             return F("Free PSRAM");
+#endif
 #ifdef CORE_POST_2_5_0
     case LabelType::HEAP_MAX_FREE_BLOCK:    return F("Heap Max Free Block");
     case LabelType::HEAP_FRAGMENTATION:     return F("Heap Fragmentation");
@@ -122,12 +129,20 @@ String getValue(LabelType::Enum label) {
     case LabelType::LOOP_COUNT:             return String(getLoopCountPerSec());
     case LabelType::CPU_ECO_MODE:           return jsonBool(Settings.EcoPowerMode());
 
-    case LabelType::FREE_MEM:               return String(ESP.getFreeHeap());
+    case LabelType::FREE_HEAP:              return String(ESP.getFreeHeap());
     case LabelType::FREE_STACK:             return String(getCurrentFreeStack());
+#ifdef ESP32
+    case LabelType::HEAP_SIZE:              return String(ESP.getHeapSize());
+#endif
 #ifdef CORE_POST_2_5_0
     case LabelType::HEAP_MAX_FREE_BLOCK:    return String(ESP.getMaxFreeBlockSize());
     case LabelType::HEAP_FRAGMENTATION:     return String(ESP.getHeapFragmentation());
 #endif
+#ifdef BOARD_HAS_PSRAM
+    case LabelType::PSRAM_SIZE:             return String(ESP.getPsramSize());           
+    case LabelType::PSRAM_FREE:             return String(ESP.getFreePsram());
+#endif
+
 
     case LabelType::BOOT_TYPE:              return getLastBootCauseString();
     case LabelType::BOOT_COUNT:             break;

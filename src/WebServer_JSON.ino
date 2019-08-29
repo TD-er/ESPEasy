@@ -61,7 +61,14 @@ void handle_json()
       stream_next_json_object_value(LabelType::HEAP_MAX_FREE_BLOCK);
       stream_next_json_object_value(LabelType::HEAP_FRAGMENTATION);
       #endif // ifdef CORE_POST_2_5_0
-      stream_last_json_object_value(LabelType::FREE_MEM);
+  #ifdef BOARD_HAS_PSRAM
+      stream_next_json_object_value(LabelType::PSRAM_SIZE);
+      stream_next_json_object_value(LabelType::PSRAM_FREE);
+  #endif
+  #ifdef ESP32
+      stream_next_json_object_value(LabelType::HEAP_SIZE);
+  #endif
+      stream_last_json_object_value(LabelType::FREE_HEAP);
       addHtml(F(",\n"));
     }
 
