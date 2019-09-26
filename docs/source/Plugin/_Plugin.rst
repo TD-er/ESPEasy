@@ -108,6 +108,7 @@ There's three different released versions of ESP Easy:
    ":ref:`P082_page`","|P082_status|","P082"
    ":ref:`P086_page`","|P086_status|","P086"
    ":ref:`P088_page`","|P088_status|","P088"
+   ":ref:`P089_page`","|P089_status|","P089"
 
 
 
