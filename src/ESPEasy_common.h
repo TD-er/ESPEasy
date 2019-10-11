@@ -31,6 +31,13 @@ namespace std
 #define ZERO_FILL(S)  memset((S), 0, sizeof(S))
 #define ZERO_TERMINATE(S)  S[sizeof(S) - 1] = 0
 
+#ifdef ESP32
+  #include <esp_spi_flash.h>   // needed for reading ESP32 chip attributes
+  #include <esp_event_loop.h>  // needed for Wifi event handler
+  #include <esp32-hal-timer.h> // needed for timers
+  #include <esp_coexist.h>     // needed for showing coex sw version
+#endif // ESP32
+
 
 String getUnknownString();
 

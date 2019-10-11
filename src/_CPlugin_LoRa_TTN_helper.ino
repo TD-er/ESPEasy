@@ -5,6 +5,7 @@
 #if defined(USES_PACKED_RAW_DATA)
 
 #include "ESPEasy_packed_raw_data.h"
+#include "src/LoRa/LoRa_common.h"
 
 
 String getPackedFromPlugin(struct EventStruct *event, uint8_t sampleSetCount)
@@ -16,7 +17,12 @@ String getPackedFromPlugin(struct EventStruct *event, uint8_t sampleSetCount)
     value_count = event->Par1;
   }
   String packed;
-  packed.reserve(32);
+  packed.reserve(LORA_PAYLOAD_BUFFER_SIZE);
+  // Header:
+  // - Plugin ID (8 bit)
+  // - IDX (16 bit)
+  // - sampleSetCount (8 bit)
+  // - value_count (8 bit)
   packed += LoRa_addInt(Settings.TaskDeviceNumber[event->TaskIndex], PackedData_uint8);
   packed += LoRa_addInt(event->idx, PackedData_uint16);
   packed += LoRa_addInt(sampleSetCount, PackedData_uint8);

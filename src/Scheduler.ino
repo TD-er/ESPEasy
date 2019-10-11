@@ -356,13 +356,11 @@ void process_interval_timer(unsigned long id, unsigned long lasttimer) {
       break;
   #endif
 
-      /*
-       #ifdef USES_C019
-          case TIMER_C019_DELAY_QUEUE:
-            process_c019_delay_queue();
-            break;
-       #endif
-       */
+  #ifdef USES_C019
+    case TIMER_C019_DELAY_QUEUE:
+      process_c019_delay_queue();
+      break;
+  #endif
 
       /*
        #ifdef USES_C020

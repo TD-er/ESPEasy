@@ -462,7 +462,7 @@ void substitute_eventvalue(String& line, const String& event) {
   }
 }
 
-void parseCompleteNonCommentLine(String& line, String& event, String& log,
+void parseCompleteNonCommentLine(String& line, const String& event, String& log,
                                  String& action, bool& match,
                                  bool& codeBlock, bool& isCommand,
                                  bool condition[], bool ifBranche[],
@@ -573,7 +573,7 @@ void parseCompleteNonCommentLine(String& line, String& event, String& log,
 #endif // ifndef BUILD_NO_DEBUG
 }
 
-void processMatchedRule(String& action, String& event,
+void processMatchedRule(String& action, const String& event,
                         String& log, bool& match, bool& codeBlock,
                         bool& isCommand, bool condition[], bool ifBranche[],
                         byte& ifBlock, byte& fakeIfBlock) {

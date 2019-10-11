@@ -34,6 +34,8 @@ else:
     "USES_P082",  # GPS
     "USES_P087",  # Serial Proxy
 
+    "USES_C019",  # TTN - SX127x/LMIC
+
     "USE_SETTINGS_ARCHIVE"
   ])
 

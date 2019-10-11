@@ -843,6 +843,7 @@ To create/register a plugin, you have to :
     //#define USES_C015   // Blynk
     #define USES_C017   // Zabbix
     // #define USES_C018 // TTN RN2483
+    // #define USES_C019 // TTN SX127x LMIC
 #endif
 
 
@@ -929,6 +930,7 @@ To create/register a plugin, you have to :
 #ifdef CONTROLLER_SET_EXPERIMENTAL
   //#define USES_C016   // Cache controller
   //#define USES_C018   // TTN/RN2483
+  //#define USES_C019   // TTN SX127x LMIC
 #endif
 
 
@@ -986,9 +988,19 @@ To create/register a plugin, you have to :
 #endif
 */
 
-
-#if defined(USES_C018)
+#if defined(USES_C018) || defined(USES_C019)
   #define USES_PACKED_RAW_DATA
+#endif
+
+#if defined(USES_C019)
+  #ifndef ESP32
+    // C019 is ESP32 only
+    #undef USES_C019
+  #else
+    #ifndef USES_LMIC_LORA
+      #define USES_LMIC_LORA
+    #endif
+  #endif
 #endif
 
 #if defined(USES_P085) || defined (USES_P052) || defined(USES_P078)
