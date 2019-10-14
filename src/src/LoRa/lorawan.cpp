@@ -18,7 +18,6 @@ static QueueHandle_t LoraSendQueue = nullptr;
 static TaskHandle_t  lmicTask      = nullptr;
 static TaskHandle_t  lorasendTask  = nullptr;
 
-static configData_t cfg;
 
 LMIC_Handler_struct::LMIC_Handler_struct() {}
 
@@ -51,25 +50,89 @@ bool LMIC_Handler_struct::isInitialized() const {
 // format: opcode, cmdname (max 19 chars), #bytes params
 // source: LoRaWAN 1.1 Specification (October 11, 2017)
 static const mac_t MACdn_table[] = {
-  { 0x01, "ResetConf",           1                     },          { 0x02, "LinkCheckAns",     2         },
-  { 0x03, "LinkADRReq",          4                     },          { 0x04, "DutyCycleReq",     1         },
-  { 0x05, "RXParamSetupReq",     4                     },          { 0x06, "DevStatusReq",     0         },
-  { 0x07, "NewChannelReq",       5                     },          { 0x08, "RxTimingSetupReq", 1         },
-  { 0x09, "TxParamSetupReq",     1                     },          { 0x0A, "DlChannelReq",     4         },
-  { 0x0B, "RekeyConf",           1                     },          { 0x0C, "ADRParamSetupReq", 1         },
-  { 0x0D, "DeviceTimeAns",       5                     },          { 0x0E, "ForceRejoinReq",   2         },
-  { 0x0F, "RejoinParamSetupReq", 1                     } };
+  { 0x01, "ResetConf",           1 },          { 0x02, "LinkCheckAns",     2 },
+  { 0x03, "LinkADRReq",          4 },          { 0x04, "DutyCycleReq",     1 },
+  { 0x05, "RXParamSetupReq",     4 },          { 0x06, "DevStatusReq",     0 },
+  { 0x07, "NewChannelReq",       5 },          { 0x08, "RxTimingSetupReq", 1 },
+  { 0x09, "TxParamSetupReq",     1 },          { 0x0A, "DlChannelReq",     4 },
+  { 0x0B, "RekeyConf",           1 },          { 0x0C, "ADRParamSetupReq", 1 },
+  { 0x0D, "DeviceTimeAns",       5 },          { 0x0E, "ForceRejoinReq",   2 },
+  { 0x0F, "RejoinParamSetupReq", 1 } };
 
 // table of LORAWAN MAC messages sent by the device to the network
 static const mac_t MACup_table[] = {
-  { 0x01, "ResetInd",        1               },        { 0x02, "LinkCheckReq",        0               },
-  { 0x03, "LinkADRAns",      1               },        { 0x04, "DutyCycleAns",        0               },
-  { 0x05, "RXParamSetupAns", 1               },        { 0x06, "DevStatusAns",        2               },
-  { 0x07, "NewChannelAns",   1               },        { 0x08, "RxTimingSetupAns",    0               },
-  { 0x09, "TxParamSetupAns", 0               },        { 0x0A, "DlChannelAns",        1               },
-  { 0x0B, "RekeyInd",        1               },        { 0x0C, "ADRParamSetupAns",    0               },
-  { 0x0D, "DeviceTimeReq",   0               },        { 0x0F, "RejoinParamSetupAns", 1               } };
+  { 0x01, "ResetInd",        1 },        { 0x02, "LinkCheckReq",        0 },
+  { 0x03, "LinkADRAns",      1 },        { 0x04, "DutyCycleAns",        0 },
+  { 0x05, "RXParamSetupAns", 1 },        { 0x06, "DevStatusAns",        2 },
+  { 0x07, "NewChannelAns",   1 },        { 0x08, "RxTimingSetupAns",    0 },
+  { 0x09, "TxParamSetupAns", 0 },        { 0x0A, "DlChannelAns",        1 },
+  { 0x0B, "RekeyInd",        1 },        { 0x0C, "ADRParamSetupAns",    0 },
+  { 0x0D, "DeviceTimeReq",   0 },        { 0x0F, "RejoinParamSetupAns", 1 } };
 
+class MyHalConfig_t : public Arduino_LMIC::HalConfiguration_t {
+public:
+
+  MyHalConfig_t() {}
+
+  // set SPI pins to board configuration, pins may come from pins_arduino.h
+  virtual void begin(void) override {
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
+  }
+
+  // virtual void end(void) override
+
+  // virtual ostime_t setModuleActive(bool state) override
+};
+
+static MyHalConfig_t myHalConfig{};
+
+// LMIC pin mapping for Hope RFM95 / HPDtek HPD13A transceivers
+static const lmic_pinmap myPinmap = {
+  .nss  = LORA_CS,
+  .rxtx = LMIC_UNUSED_PIN,
+  .rst  = LORA_RST == NOT_A_PIN ? LMIC_UNUSED_PIN : LORA_RST,
+  .dio  = { LORA_IRQ, LORA_IO1,
+            LORA_IO2 == NOT_A_PIN ? LMIC_UNUSED_PIN : LORA_IO2 },
+  .rxtx_rx_active = LMIC_UNUSED_PIN,
+  .rssi_cal       = 10,
+  .spi_freq       = 8000000, // 8MHz
+  .pConfig        = &myHalConfig };
+
+void LMIC_Handler_struct::lora_setupForNetwork(bool preJoin) {
+  if (preJoin) {
+# if CFG_LMIC_US_like
+
+    // in the US, with TTN, it saves join time if we start on subband 1
+    // (channels 8-15). This will get overridden after the join by
+    // parameters from the network. If working with other networks or in
+    // other regions, this will need to be changed.
+    LMIC_selectSubBand(1);
+# elif CFG_LMIC_EU_like
+
+    // setting for TheThingsNetwork
+    // TTN uses SF9, not SF12, for RX2 window
+    LMIC.dn2Dr = EU868_DR_SF9;
+
+    // Disable link check validation
+    LMIC_setLinkCheckMode(0);
+# endif // if CFG_LMIC_US_like
+  } else {
+    // set data rate adaptation according to saved setting
+    LMIC_setAdrMode(cfg.adrmode);
+
+    // set data rate and transmit power to stored device values if no ADR
+    if (!cfg.adrmode) {
+      LMIC_setDrTxpow(assertDR(cfg.loradr), cfg.txpower);
+    }
+
+    // show current devaddr
+    ESP_LOGI(TAG, "DEVaddr: %08X", LMIC.devaddr);
+    ESP_LOGI(TAG, "Radio parameters: %s / %s / %s",
+             getSfName(updr2rps(LMIC.datarate)),
+             getBwName(updr2rps(LMIC.datarate)),
+             getCrName(updr2rps(LMIC.datarate)));
+  }
+}
 
 // DevEUI generator using devices's MAC address
 void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
@@ -94,7 +157,7 @@ void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
 /* new version, does it with well formed mac according IEEE spec, but is
    breaking change
    // DevEUI generator using devices's MAC address
-   void gen_lora_deveui(uint8_t *pdeveui) {
+   void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
    uint8_t *p = pdeveui, dmac[6];
    ESP_ERROR_CHECK(esp_efuse_mac_get_default(dmac));
    // deveui is LSB, we reverse it so TTN DEVEUI display
@@ -212,135 +275,17 @@ void LMIC_Handler_struct::showLoraKeys(void) {
 
 # endif // VERBOSE
 
-void LMIC_Handler_struct::onEvent(ev_t ev) {
-  char buff[24] = "";
-
-  switch (ev) {
-    case EV_SCAN_TIMEOUT:
-      strcpy_P(buff, PSTR("SCAN TIMEOUT"));
-      break;
-
-    case EV_BEACON_FOUND:
-      strcpy_P(buff, PSTR("BEACON FOUND"));
-      break;
-
-    case EV_BEACON_MISSED:
-      strcpy_P(buff, PSTR("BEACON MISSED"));
-      break;
-
-    case EV_BEACON_TRACKED:
-      strcpy_P(buff, PSTR("BEACON TRACKED"));
-      break;
-
-    case EV_JOINING:
-      strcpy_P(buff, PSTR("JOINING"));
-      break;
-
-    case EV_JOINED:
-      strcpy_P(buff, PSTR("JOINED"));
-
-      // set data rate adaptation according to saved setting
-      LMIC_setAdrMode(cfg.adrmode);
-
-      // set data rate and transmit power to defaults only if we have no ADR
-      if (!cfg.adrmode) {
-        LMIC_setDrTxpow(assertDR(cfg.loradr), cfg.txpower);
-      }
-
-      // show current devaddr
-      ESP_LOGI(TAG, "DEVaddr=%08X", LMIC.devaddr);
-      ESP_LOGI(TAG, "Radio parameters %s / %s / %s",
-               getSfName(updr2rps(LMIC.datarate)),
-               getBwName(updr2rps(LMIC.datarate)),
-               getCrName(updr2rps(LMIC.datarate)));
-      break;
-
-    case EV_RFU1:
-      strcpy_P(buff, PSTR("RFU1"));
-      break;
-
-    case EV_JOIN_FAILED:
-      strcpy_P(buff, PSTR("JOIN FAILED"));
-      break;
-
-    case EV_REJOIN_FAILED:
-      strcpy_P(buff, PSTR("REJOIN FAILED"));
-      break;
-
-    case EV_TXCOMPLETE:
-      strcpy_P(buff, PSTR("TX COMPLETE"));
-      break;
-
-    case EV_LOST_TSYNC:
-      strcpy_P(buff, PSTR("LOST TSYNC"));
-      break;
-
-    case EV_RESET:
-      strcpy_P(buff, PSTR("RESET"));
-      break;
-
-    case EV_RXCOMPLETE:
-
-      // data received in ping slot
-      strcpy_P(buff, PSTR("RX COMPLETE"));
-      break;
-
-    case EV_LINK_DEAD:
-      strcpy_P(buff, PSTR("LINK DEAD"));
-      break;
-
-    case EV_LINK_ALIVE:
-      strcpy_P(buff, PSTR("LINK_ALIVE"));
-      break;
-
-    case EV_SCAN_FOUND:
-      strcpy_P(buff, PSTR("SCAN FOUND"));
-      break;
-
-    case EV_TXSTART:
-
-      if (!(LMIC.opmode & OP_JOINING)) {
-        strcpy_P(buff, PSTR("TX START"));
-      }
-      break;
-
-    case EV_TXCANCELED:
-      strcpy_P(buff, PSTR("TX CANCELLED"));
-      break;
-
-    case EV_RXSTART:
-      strcpy_P(buff, PSTR("RX START"));
-      break;
-
-    case EV_JOIN_TXCOMPLETE:
-      strcpy_P(buff, PSTR("JOIN WAIT"));
-      break;
-
-    default:
-      sprintf_P(buff, PSTR("LMIC EV %d"), ev);
-      break;
-  }
-
-  /*
-     // Log & Display if asked
-     if (*buff) {
-      ESP_LOGI(TAG, "%s", buff);
-      sprintf(lmic_event_msg, buff);
-     }
-   */
-}
-
 // LMIC send task
 void LMIC_Handler_struct::lora_send(void *pvParameters) {
   configASSERT(((uint32_t)pvParameters) == 1); // FreeRTOS check
 
-  static MessageBuffer_t SendBuffer;
+  MessageBuffer_t SendBuffer;
 
   while (1) {
     // postpone until we are joined if we are not
-    while (!LMIC.devaddr) {
-      vTaskDelay(pdMS_TO_TICKS(500));
-    }
+    // while (!LMIC.devaddr) {
+    //  vTaskDelay(pdMS_TO_TICKS(500));
+    // }
 
     // fetch next or wait for payload to send from queue
     if (xQueueReceive(LoraSendQueue, &SendBuffer, portMAX_DELAY) != pdTRUE) {
@@ -350,7 +295,8 @@ void LMIC_Handler_struct::lora_send(void *pvParameters) {
 
     // attempt to transmit payload
     else {
-      switch (LMIC_sendWithCallback_strict(
+      // switch (LMIC_sendWithCallback_strict(
+      switch (LMIC_sendWithCallback(
                 SendBuffer.MessagePort, SendBuffer.Message, SendBuffer.MessageSize,
                 (cfg.countermode & 0x02), myTxCallback, NULL)) {
         case LMIC_ERROR_SUCCESS:
@@ -363,7 +309,8 @@ void LMIC_Handler_struct::lora_send(void *pvParameters) {
           lora_enqueuedata(&SendBuffer);                 // re-enqueue the undelivered message
           break;
         case LMIC_ERROR_TX_TOO_LARGE:                    // message size exceeds LMIC buffer size
-        case LMIC_ERROR_TX_NOT_FEASIBLE:                 // message too large for current datarate
+        case LMIC_ERROR_TX_NOT_FEASIBLE:                 // message too large for current
+                                                         // datarate
           ESP_LOGI(TAG,
                    "Message too large to send, message not sent and deleted");
 
@@ -398,7 +345,8 @@ esp_err_t LMIC_Handler_struct::lora_stack_init() {
                           &lmicTask,  // task handle
                           1);         // CPU core
 
-  if (!LMIC_startJoining()) {         // start joining
+  // start join
+  if (!LMIC_startJoining()) {
     ESP_LOGI(TAG, "Already joined");
   }
 
@@ -438,7 +386,12 @@ void LMIC_Handler_struct::lora_enqueuedata(MessageBuffer_t *message) {
   }
 
   if (ret != pdTRUE) {
+    snprintf(lmic_event_msg + 14, LMIC_EVENTMSG_LEN - 14, "<>");
     ESP_LOGW(TAG, "LORA sendqueue is full");
+  } else {
+    // add Lora send queue length to display
+    snprintf(lmic_event_msg + 14, LMIC_EVENTMSG_LEN - 14, "%2u",
+             uxQueueMessagesWaiting(LoraSendQueue));
   }
 }
 
@@ -503,54 +456,84 @@ finish:
 
 // LMIC lorawan stack task
 void LMIC_Handler_struct::lmictask(void *pvParameters) {
-  configASSERT(((uint32_t)pvParameters) == 1); // FreeRTOS check
+  configASSERT(((uint32_t)pvParameters) == 1);
 
-  os_init();                                   // initialize lmic run-time environment
-  LMIC_reset();                                // initialize lmic MAC
-  LMIC_setLinkCheckMode(0);
+  // setup LMIC stack
+  os_init_ex(&myPinmap); // initialize lmic run-time environment
 
-# if defined(CFG_eu868)
+  // register a callback for downlink messages and lmic events.
+  // We aren't trying to write reentrant code, so pUserData is NULL.
+  // LMIC_reset() doesn't affect callbacks, so we can do this first.
+  LMIC_registerRxMessageCb(myRxCallback, NULL);
+  LMIC_registerEventCb(myEventCallback, NULL);
 
-  // Note that The Things Network uses the non-standard SF9BW125 data rate for
-  // RX2 in Europe and switches between RX1 and RX2 based on network congestion.
-  // Thus, to avoid occasionally join failures, we set datarate to SF9 and
-  // bypass the LORAWAN spec-compliant RX2 == SF12 setting
-  LMIC_setDrTxpow(EU868_DR_SF9, KEEP_TXPOW);
-# else // if defined(CFG_eu868)
-
-  // Set the data rate to Spreading Factor 7.  This is the fastest supported
-  // rate for 125 kHz channels, and it minimizes air time and battery power.
-  // Set the transmission power to 14 dBi (25 mW).
-  LMIC_setDrTxpow(DR_SF7, 14);
-# endif // if defined(CFG_eu868)
+  // Reset the MAC state. Session and pending data transfers will be
+  // discarded.
+  LMIC_reset();
 
   // This tells LMIC to make the receive windows bigger, in case your clock is
   // faster or slower. This causes the transceiver to be earlier switched on,
   // so consuming more power. You may sharpen (reduce) CLOCK_ERROR_PERCENTAGE
   // in src/lmic_config.h if you are limited on battery.
 # ifdef CLOCK_ERROR_PROCENTAGE
-  LMIC_setClockError(MAX_CLOCK_ERROR * CLOCK_ERROR_PROCENTAGE / 100);
+  LMIC_setClockError(CLOCK_ERROR_PROCENTAGE * MAX_CLOCK_ERROR / 100);
 # endif // ifdef CLOCK_ERROR_PROCENTAGE
-
-  // #if defined(CFG_US915) || defined(CFG_au921)
-# if CFG_LMIC_US_like
-
-  // in the US, with TTN, it saves join time if we start on subband 1
-  // (channels 8-15). This will get overridden after the join by parameters
-  // from the network. If working with other networks or in other regions,
-  // this will need to be changed.
-  LMIC_selectSubBand(1);
-# endif // if CFG_LMIC_US_like
-
-  // register a callback for downlink messages. We aren't trying to write
-  // reentrant code, so pUserData is NULL.
-  LMIC_registerRxMessageCb(myRxCallback, NULL);
 
   while (1) {
     os_runloop_once(); // execute lmic scheduled jobs and events
-    delay(2);          // yield to CPU
+    delay(2); // yield to CPU
   }
 } // lmictask
+
+// lmic event handler
+void LMIC_Handler_struct::myEventCallback(void *pUserData, ev_t ev) {
+  // using message descriptors from LMIC library
+  static const char *const evNames[] = { LMIC_EVENT_NAME_TABLE__INIT };
+
+  // get current length of lora send queue
+  uint8_t const msgWaiting = uxQueueMessagesWaiting(LoraSendQueue);
+
+  // get current event message
+  if (ev < sizeof(evNames) / sizeof(evNames[0])) {
+    snprintf(lmic_event_msg, LMIC_EVENTMSG_LEN, "%-16s",
+             evNames[ev] + 3); // +3 to strip "EV_"
+  }
+  else {
+    snprintf(lmic_event_msg, LMIC_EVENTMSG_LEN, "LMIC event %-4u ", ev);
+  }
+
+  // process current event message
+  switch (ev) {
+    case EV_JOINING:
+
+      // do the network-specific setup prior to join.
+      lora_setupForNetwork(true);
+      break;
+
+    case EV_JOINED:
+
+      // do the after join network-specific setup.
+      lora_setupForNetwork(false);
+      break;
+
+    case EV_JOIN_TXCOMPLETE:
+
+      // replace descriptor from library with more descriptive term
+      snprintf(lmic_event_msg, LMIC_EVENTMSG_LEN, "%-16s", "JOIN_WAIT");
+      break;
+
+    default:
+      break;
+  }
+
+  // add Lora send queue length to display
+  if (msgWaiting) {
+    snprintf(lmic_event_msg + 14, LMIC_EVENTMSG_LEN - 14, "%2u", msgWaiting);
+  }
+
+  // print event
+  ESP_LOGD(TAG, "%s", lmic_event_msg);
+}
 
 // receive message handler
 void LMIC_Handler_struct::myRxCallback(void *pUserData, uint8_t port, const uint8_t *pMsg,
@@ -602,8 +585,8 @@ void LMIC_Handler_struct::myRxCallback(void *pUserData, uint8_t port, const uint
 # if (TIME_SYNC_LORASERVER)
 
       // valid timesync answer -> call timesync processor
-      if ((port >= TIMEANSWERPORT_MIN) && (port <= TIMEANSWERPORT_MAX)) {
-        recv_timesync_ans(port, pMsg, nMsg);
+      if (port == TIMEPORT) {
+        recv_timesync_ans(pMsg, nMsg);
         break;
       }
 # endif // if (TIME_SYNC_LORASERVER)
@@ -669,9 +652,9 @@ uint8_t LMIC_Handler_struct::getBattLevel() {
      MCMD_DEVS_BATT_MAX    = 0xFE, // max battery value
      MCMD_DEVS_BATT_NOINFO = 0xFF, // unknown battery level
    */
+# if (defined HAS_PMU || defined BAT_MEASURE_ADC)
 
   // FIXME TD-er: Implement reading bat voltage.
-# if (defined HAS_PMU || defined BAT_MEASURE_ADC)
   uint16_t voltage = 0; // read_voltage();
 
   switch (voltage) {

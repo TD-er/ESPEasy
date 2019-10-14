@@ -61,4 +61,11 @@ typedef struct {
 } configData_t;
 
 
+// length of display buffer for lmic event messages
+#define LMIC_EVENTMSG_LEN 17
+
+extern configData_t cfg;                       // current device configuration
+extern char lmic_event_msg[LMIC_EVENTMSG_LEN]; // display buffer
+
+
 #endif // LORA_LORACOMMON_H

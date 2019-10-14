@@ -16,17 +16,6 @@
 #endif // ifdef MCP_24AA02E64_I2C_ADDRESS
 
 
-class MyHalConfig_t : public Arduino_LMIC::HalConfiguration_t {
-public:
-
-  MyHalConfig_t() {}
-
-  virtual void begin(void) override {
-    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_CS);
-  }
-};
-
-
 // table of LORAWAN MAC commands
 typedef struct {
   const uint8_t opcode;
@@ -44,8 +33,8 @@ struct LMIC_Handler_struct {
   bool        isInitialized() const;
 
   esp_err_t   lora_stack_init();
+  static void lora_setupForNetwork(bool preJoin);
   static void lmictask(void *pvParameters);
-  void        onEvent(ev_t ev);
   void        gen_lora_deveui(uint8_t *pdeveui);
   void        RevBytes(unsigned char *b,
                        size_t         c);
@@ -57,6 +46,8 @@ struct LMIC_Handler_struct {
   static void lora_send(void *pvParameters);
   static void lora_enqueuedata(MessageBuffer_t *message);
   void        lora_queuereset(void);
+  static void myEventCallback(void *pUserData,
+                              ev_t  ev);
   static void myRxCallback(void          *pUserData,
                            uint8_t        port,
                            const uint8_t *pMsg,
@@ -76,31 +67,6 @@ struct LMIC_Handler_struct {
   void        user_request_network_time_callback(void *pVoidUserUTCTime,
                                                  int   flagSuccess);
 #endif // if (TIME_SYNC_LORAWAN)
-
-
-  MyHalConfig_t myHalConfig{};
-
-  // LMIC pin mapping
-  const lmic_pinmap lmic_pins = {
-    .nss  = LORA_CS,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst  = LORA_RST == NOT_A_PIN ? LMIC_UNUSED_PIN : LORA_RST,
-    .dio  = { LORA_IRQ, LORA_IO1,
-              LORA_IO2 == NOT_A_PIN ? LMIC_UNUSED_PIN : LORA_IO2 },
-
-    // optional: set polarity of rxtx pin.
-    .rxtx_rx_active = 0,
-
-    // optional: set RSSI cal for listen-before-talk
-    // this value is in dB, and is added to RSSI
-    // measured prior to decision.
-    // Must include noise guardband! Ignored in US,
-    // EU, IN, other markets where LBT is not required.
-    .rssi_cal       = 0,
-
-    // optional: override LMIC_SPI_FREQ if non-zero
-    .spi_freq = 0,
-    .pConfig  = &myHalConfig };
 
 
   // FIXME TD-er:  Make this a member, which is being set at init.
