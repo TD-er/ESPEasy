@@ -23,16 +23,20 @@ typedef struct {
   const uint8_t params;
 } mac_t;
 
-struct LMIC_Handler_struct {
-  LMIC_Handler_struct();
+class LMIC_Handler_t {
+public:
 
-  ~LMIC_Handler_struct();
+  LMIC_Handler_t();
+
+  ~LMIC_Handler_t();
 
   void        reset();
 
   bool        isInitialized() const;
 
   esp_err_t   lora_stack_init();
+
+private:
   static void lora_setupForNetwork(bool preJoin);
   static void lmictask(void *pvParameters);
   void        gen_lora_deveui(uint8_t *pdeveui);
@@ -44,8 +48,15 @@ struct LMIC_Handler_struct {
   void        os_getDevEui(u1_t *buf);
   void        showLoraKeys(void);
   static void lora_send(void *pvParameters);
+
+
+public:
+
+
   static void lora_enqueuedata(MessageBuffer_t *message);
   void        lora_queuereset(void);
+
+private:
   static void myEventCallback(void *pUserData,
                               ev_t  ev);
   static void myRxCallback(void          *pUserData,
@@ -59,6 +70,8 @@ struct LMIC_Handler_struct {
                          const mac_t   table[],
                          const uint8_t tablesize);
   uint8_t     getBattLevel(void);
+
+public:
   const char* getSfName(rps_t rps);
   const char* getBwName(rps_t rps);
   const char* getCrName(rps_t rps);
@@ -68,6 +81,7 @@ struct LMIC_Handler_struct {
                                                  int   flagSuccess);
 #endif // if (TIME_SYNC_LORAWAN)
 
+private:
 
   // FIXME TD-er:  Make this a member, which is being set at init.
   const uint8_t DEVEUI[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };

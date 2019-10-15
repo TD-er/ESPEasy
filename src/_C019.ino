@@ -29,6 +29,11 @@ struct C019_data_struct {
   }
 
   bool init() {
+    // FIXME TD-er: Call function to init LMIC pin map
+    if (lmic == nullptr) {
+      lmic = new LMIC_Handler_t();
+    }
+    if (lmic->lora_stack_init() != ESP_OK) return false;
     return isInitialized();
   }
 
@@ -39,7 +44,7 @@ struct C019_data_struct {
 
 private:
 
-  LMIC_Handler_struct *lmic               = nullptr;
+  LMIC_Handler_t *lmic               = nullptr;
   uint8_t              sampleSetCounter   = 0;
   uint8_t              sampleSetInitiator = 0;
 } C019_data;
@@ -168,6 +173,11 @@ bool CPlugin_019(byte function, struct EventStruct *event, String& string)
 
     case CPLUGIN_PROTOCOL_SEND:
     {
+      /*
+      success = C019_DelayHandler.addToQueue(
+          C019_queue_element(event, C019_data.getSampleSetCount(event->TaskIndex)));
+      scheduleNextDelayQueue(TIMER_C019_DELAY_QUEUE, C019_DelayHandler.getNextScheduleTime());
+      */
       break;
     }
 
@@ -181,9 +191,7 @@ bool CPlugin_019(byte function, struct EventStruct *event, String& string)
   return success;
 }
 
-bool do_process_c019_delay_queue(int                       controller_number,
-                                 const C019_queue_element& element,
-                                 ControllerSettingsStruct& ControllerSettings);
+bool do_process_c019_delay_queue(int controller_number, const C019_queue_element& element, ControllerSettingsStruct& ControllerSettings);
 
 bool do_process_c019_delay_queue(int controller_number, const C019_queue_element& element, ControllerSettingsStruct& ControllerSettings) {
   bool success = false; // C019_data.txHexBytes(element.packed, ControllerSettings.Port);

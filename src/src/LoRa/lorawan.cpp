@@ -19,14 +19,14 @@ static TaskHandle_t  lmicTask      = nullptr;
 static TaskHandle_t  lorasendTask  = nullptr;
 
 
-LMIC_Handler_struct::LMIC_Handler_struct() {}
+LMIC_Handler_t::LMIC_Handler_t() {}
 
 
-LMIC_Handler_struct::~LMIC_Handler_struct() {
+LMIC_Handler_t::~LMIC_Handler_t() {
   reset();
 }
 
-void LMIC_Handler_struct::reset() {
+void LMIC_Handler_t::reset() {
   if (lmicTask != nullptr) {
     vTaskDelete(lmicTask);
     lmicTask = nullptr;
@@ -42,7 +42,7 @@ void LMIC_Handler_struct::reset() {
   }
 }
 
-bool LMIC_Handler_struct::isInitialized() const {
+bool LMIC_Handler_t::isInitialized() const {
   return lmicTask != nullptr && lorasendTask != nullptr && LoraSendQueue != nullptr;
 }
 
@@ -98,7 +98,7 @@ static const lmic_pinmap myPinmap = {
   .spi_freq       = 8000000, // 8MHz
   .pConfig        = &myHalConfig };
 
-void LMIC_Handler_struct::lora_setupForNetwork(bool preJoin) {
+void LMIC_Handler_t::lora_setupForNetwork(bool preJoin) {
   if (preJoin) {
 # if CFG_LMIC_US_like
 
@@ -135,7 +135,7 @@ void LMIC_Handler_struct::lora_setupForNetwork(bool preJoin) {
 }
 
 // DevEUI generator using devices's MAC address
-void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
+void LMIC_Handler_t::gen_lora_deveui(uint8_t *pdeveui) {
   uint8_t *p = pdeveui, dmac[6];
   int i = 0;
 
@@ -157,7 +157,7 @@ void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
 /* new version, does it with well formed mac according IEEE spec, but is
    breaking change
    // DevEUI generator using devices's MAC address
-   void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
+   void LMIC_Handler_t::gen_lora_deveui(uint8_t *pdeveui) {
    uint8_t *p = pdeveui, dmac[6];
    ESP_ERROR_CHECK(esp_efuse_mac_get_default(dmac));
    // deveui is LSB, we reverse it so TTN DEVEUI display
@@ -176,7 +176,7 @@ void LMIC_Handler_struct::gen_lora_deveui(uint8_t *pdeveui) {
  */
 
 // Function to do a byte swap in a byte array
-void LMIC_Handler_struct::RevBytes(unsigned char *b, size_t c) {
+void LMIC_Handler_t::RevBytes(unsigned char *b, size_t c) {
   u1_t i;
 
   for (i = 0; i < c / 2; i++) {
@@ -187,16 +187,16 @@ void LMIC_Handler_struct::RevBytes(unsigned char *b, size_t c) {
 }
 
 // LMIC callback functions
-void LMIC_Handler_struct::os_getDevKey(u1_t *buf) {
+void LMIC_Handler_t::os_getDevKey(u1_t *buf) {
   memcpy(buf, APPKEY, 16);
 }
 
-void LMIC_Handler_struct::os_getArtEui(u1_t *buf) {
+void LMIC_Handler_t::os_getArtEui(u1_t *buf) {
   memcpy(buf, APPEUI, 8);
   RevBytes(buf, 8); // TTN requires it in LSB First order, so we swap bytes
 }
 
-void LMIC_Handler_struct::os_getDevEui(u1_t *buf) {
+void LMIC_Handler_t::os_getDevEui(u1_t *buf) {
   int i = 0, k = 0;
 
   memcpy(buf, DEVEUI, 8); // get fixed DEVEUI from loraconf.h
@@ -218,7 +218,7 @@ void LMIC_Handler_struct::os_getDevEui(u1_t *buf) {
 # endif // ifdef MCP_24AA02E64_I2C_ADDRESS
 }
 
-void LMIC_Handler_struct::get_hard_deveui(uint8_t *pdeveui) {
+void LMIC_Handler_t::get_hard_deveui(uint8_t *pdeveui) {
   // read DEVEUI from Microchip 24AA02E64 2Kb serial eeprom if present
 # ifdef MCP_24AA02E64_I2C_ADDRESS
 
@@ -259,7 +259,7 @@ void LMIC_Handler_struct::get_hard_deveui(uint8_t *pdeveui) {
 # if (VERBOSE)
 
 // Display OTAA keys
-void LMIC_Handler_struct::showLoraKeys(void) {
+void LMIC_Handler_t::showLoraKeys(void) {
   // LMIC may not have used callback to fill
   // all EUI buffer so we do it here to a temp
   // buffer to be able to display them
@@ -276,7 +276,7 @@ void LMIC_Handler_struct::showLoraKeys(void) {
 # endif // VERBOSE
 
 // LMIC send task
-void LMIC_Handler_struct::lora_send(void *pvParameters) {
+void LMIC_Handler_t::lora_send(void *pvParameters) {
   configASSERT(((uint32_t)pvParameters) == 1); // FreeRTOS check
 
   MessageBuffer_t SendBuffer;
@@ -324,7 +324,7 @@ void LMIC_Handler_struct::lora_send(void *pvParameters) {
   }
 }
 
-esp_err_t LMIC_Handler_struct::lora_stack_init() {
+esp_err_t LMIC_Handler_t::lora_stack_init() {
   assert(SEND_QUEUE_SIZE);
   LoraSendQueue = xQueueCreate(SEND_QUEUE_SIZE, sizeof(MessageBuffer_t));
 
@@ -362,7 +362,7 @@ esp_err_t LMIC_Handler_struct::lora_stack_init() {
   return ESP_OK;
 }
 
-void LMIC_Handler_struct::lora_enqueuedata(MessageBuffer_t *message) {
+void LMIC_Handler_t::lora_enqueuedata(MessageBuffer_t *message) {
   // enqueue message in LORA send queue
   BaseType_t ret = pdFALSE;
   MessageBuffer_t DummyBuffer;
@@ -395,12 +395,12 @@ void LMIC_Handler_struct::lora_enqueuedata(MessageBuffer_t *message) {
   }
 }
 
-void LMIC_Handler_struct::lora_queuereset(void) {
+void LMIC_Handler_t::lora_queuereset(void) {
   xQueueReset(LoraSendQueue);
 }
 
 # if (TIME_SYNC_LORAWAN)
-void IRAM_ATTR LMIC_Handler_struct::user_request_network_time_callback(void *pVoidUserUTCTime,
+void IRAM_ATTR LMIC_Handler_t::user_request_network_time_callback(void *pVoidUserUTCTime,
                                                                        int   flagSuccess) {
   // Explicit conversion from void* to uint32_t* to avoid compiler errors
   time_t *pUserUTCTime = (time_t *)pVoidUserUTCTime;
@@ -455,7 +455,7 @@ finish:
 # endif // TIME_SYNC_LORAWAN
 
 // LMIC lorawan stack task
-void LMIC_Handler_struct::lmictask(void *pvParameters) {
+void LMIC_Handler_t::lmictask(void *pvParameters) {
   configASSERT(((uint32_t)pvParameters) == 1);
 
   // setup LMIC stack
@@ -486,7 +486,7 @@ void LMIC_Handler_struct::lmictask(void *pvParameters) {
 } // lmictask
 
 // lmic event handler
-void LMIC_Handler_struct::myEventCallback(void *pUserData, ev_t ev) {
+void LMIC_Handler_t::myEventCallback(void *pUserData, ev_t ev) {
   // using message descriptors from LMIC library
   static const char *const evNames[] = { LMIC_EVENT_NAME_TABLE__INIT };
 
@@ -536,7 +536,7 @@ void LMIC_Handler_struct::myEventCallback(void *pUserData, ev_t ev) {
 }
 
 // receive message handler
-void LMIC_Handler_struct::myRxCallback(void *pUserData, uint8_t port, const uint8_t *pMsg,
+void LMIC_Handler_t::myRxCallback(void *pUserData, uint8_t port, const uint8_t *pMsg,
                                        size_t nMsg) {
   // display type of received data
   if (nMsg) {
@@ -598,7 +598,7 @@ void LMIC_Handler_struct::myRxCallback(void *pUserData, uint8_t port, const uint
 }
 
 // transmit complete message handler
-void LMIC_Handler_struct::myTxCallback(void *pUserData, int fSuccess) {
+void LMIC_Handler_t::myTxCallback(void *pUserData, int fSuccess) {
 # if (TIME_SYNC_LORASERVER)
 
   // if last packet sent was a timesync request, store TX timestamp
@@ -609,7 +609,7 @@ void LMIC_Handler_struct::myTxCallback(void *pUserData, int fSuccess) {
 }
 
 // decode LORAWAN MAC message
-void LMIC_Handler_struct::mac_decode(const uint8_t cmd[], const uint8_t cmdlen, const mac_t table[],
+void LMIC_Handler_t::mac_decode(const uint8_t cmd[], const uint8_t cmdlen, const mac_t table[],
                                      const uint8_t tablesize) {
   if (!cmdlen) {
     return;
@@ -644,7 +644,7 @@ void LMIC_Handler_struct::mac_decode(const uint8_t cmd[], const uint8_t cmdlen, 
   } // command parsing loop
 }   // mac_decode()
 
-uint8_t LMIC_Handler_struct::getBattLevel() {
+uint8_t LMIC_Handler_t::getBattLevel() {
   /*
      return values:
      MCMD_DEVS_EXT_POWER   = 0x00, // external power supply
@@ -672,20 +672,20 @@ uint8_t LMIC_Handler_struct::getBattLevel() {
 
 // u1_t os_getBattLevel(void) { return getBattLevel(); };
 
-const char * LMIC_Handler_struct::getSfName(rps_t rps) {
+const char * LMIC_Handler_t::getSfName(rps_t rps) {
   const char *const t[] = { "FSK",  "SF7",  "SF8",  "SF9",
                             "SF10", "SF11", "SF12", "SF?" };
 
   return t[getSf(rps)];
 }
 
-const char * LMIC_Handler_struct::getBwName(rps_t rps) {
+const char * LMIC_Handler_t::getBwName(rps_t rps) {
   const char *const t[] = { "BW125", "BW250", "BW500", "BW?" };
 
   return t[getBw(rps)];
 }
 
-const char * LMIC_Handler_struct::getCrName(rps_t rps) {
+const char * LMIC_Handler_t::getCrName(rps_t rps) {
   const char *const t[] = { "CR 4/5", "CR 4/6", "CR 4/7", "CR 4/8" };
 
   return t[getCr(rps)];
