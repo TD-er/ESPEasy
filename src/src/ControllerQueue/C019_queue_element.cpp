@@ -17,7 +17,8 @@ C019_queue_element::C019_queue_element(struct EventStruct *event, uint8_t sample
   controller_idx(event->ControllerIndex)
 {
     # ifdef USES_PACKED_RAW_DATA
-  packed = getPackedFromPlugin(event, sampleSetCount);
+    String packedMessage = getPackedFromPlugin(event, sampleSetCount);
+    // TODO TD-er: Must check length and transfer it to packed.message.
     # endif // USES_PACKED_RAW_DATA
 }
 
