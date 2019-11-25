@@ -958,6 +958,11 @@ void ResetFactory()
   fname=FILE_RULES;
   InitFile(fname.c_str(), 0);
 
+#ifdef USES_WIFI_MESH
+  fname=FILE_MESH;
+  InitFile(fname.c_str(), 4096);
+#endif
+
   Settings.clearMisc();
   if (!ResetFactoryDefaultPreference.keepNTP()) {
     Settings.clearTimeSettings();

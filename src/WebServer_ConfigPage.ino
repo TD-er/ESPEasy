@@ -99,6 +99,32 @@ void handle_config() {
         break;
     }
 
+
+    #ifdef USES_WIFI_MESH
+    {
+      String meshname = WebServer.arg(F("meshname"));
+      meshname.trim();
+      safe_strncpy(MeshSettings.MeshName, meshname.c_str(), sizeof(MeshSettings.MeshName));
+      String meshnodeid = WebServer.arg(F("meshnodeid"));
+      meshnodeid.trim();
+      safe_strncpy(MeshSettings.nodeId, meshnodeid.c_str(), sizeof(MeshSettings.nodeId));
+      copyFormPassword(F("meshpass"), MeshSettings.MeshPass, sizeof(MeshSettings.MeshPass));
+
+      String meshStaticIP      = WebServer.arg(F("mesh_ip"));
+      if (meshStaticIP.length() != 0)
+        str2ip(meshStaticIP, MeshSettings.staticIP);
+
+      MeshSettings.serverPort = getFormItemInt(F("meshserverport"), MeshSettings.serverPort);
+      MeshSettings.meshWiFiChannel = getFormItemInt(F("meshchannel"), MeshSettings.meshWiFiChannel);
+      MeshSettings.maxAPStations = getFormItemInt(F("maxapstation"), MeshSettings.maxAPStations);
+
+      MeshSettings.enabled = isFormItemChecked(F("meshenabled"));
+      
+      // FIXME TD-er: Add bssid, ESPnow keys
+    }
+    #endif
+
+
     Settings.deepSleepOnFail = isFormItemChecked(F("deepsleeponfail"));
     str2ip(espip,      Settings.IP);
     str2ip(espgateway, Settings.Gateway);
@@ -133,6 +159,27 @@ void handle_config() {
   addFormPasswordBox(F("Fallback WPA Key"), F("key2"), SecuritySettings.WifiKey2, 63);
   addFormSeparator(2);
   addFormPasswordBox(F("WPA AP Mode Key"), F("apkey"), SecuritySettings.WifiAPKey, 63);
+
+
+#ifdef USES_WIFI_MESH
+  addFormSubHeader(F("WiFi Mesh Settings"));
+
+  addFormTextBox(F("Mesh Name"), F("meshname"), MeshSettings.MeshName, 25);
+  addFormTextBox(F("Mesh Node ID"), F("meshnodeid"), MeshSettings.nodeId, 6);
+  addFormNote(F("Node ID defaults to ESP.getChipId(), when left empty"));
+  addFormPasswordBox(F("Mesh Password"), F("meshpass"), MeshSettings.MeshPass, 63);
+
+  addFormNumericBox(F("Mesh Channel"), F("meshchannel"), MeshSettings.meshWiFiChannel, 1, 13);
+  addFormNumericBox(F("Mesh Server Port"), F("meshserverport"), MeshSettings.serverPort, 0, 65535);
+  addFormNumericBox(F("Max AP stations"), F("maxapstation"), MeshSettings.maxAPStations, 0, 8);
+
+  addFormIPBox(F("Mesh static IP"), F("mesh_ip"),  MeshSettings.staticIP);
+
+  addFormCheckBox(F("Mesh Enabled"), F("meshenabled"), MeshSettings.enabled);
+
+
+
+#endif
 
   // TD-er add IP access box F("ipblocklevel")
   addFormSubHeader(F("Client IP filtering"));

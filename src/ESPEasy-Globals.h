@@ -124,6 +124,7 @@ extern NotificationStruct Notification[NPLUGIN_MAX];
   #define FILE_SECURITY     "security.dat"
   #define FILE_NOTIFICATION "notification.dat"
   #define FILE_RULES        "rules1.txt"
+  #define FILE_MESH         "mesh.dat"
   #include <lwip/init.h>
   #ifndef LWIP_VERSION_MAJOR
     #error
@@ -181,6 +182,9 @@ extern NotificationStruct Notification[NPLUGIN_MAX];
   #define FILE_SECURITY     "/security.dat"
   #define FILE_NOTIFICATION "/notification.dat"
   #define FILE_RULES        "/rules1.txt"
+  #define FILE_MESH         "/mesh.dat"
+
+
   #include <WiFi.h>
 //  #include  "esp32_ping.h"
   #ifdef USE_LITTLEFS
