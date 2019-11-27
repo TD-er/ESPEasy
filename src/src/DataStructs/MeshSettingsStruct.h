@@ -35,13 +35,13 @@ struct MeshSettingsStruct
   char nodeId[6];      // The id for this mesh node. Used as suffix for the node SSID. 
                        // If set to "", the id will default to ESP.getChipId().
 
-  uint16_t serverPort; //  The server port used by the AP of the ESP8266WiFiMesh instance.
+  uint16_t serverPort = 4011; //  The server port used by the AP of the ESP8266WiFiMesh instance.
   // If multiple APs exist on a single ESP8266, each requires a separate server port.
   // If two AP:s on the same ESP8266 are using the same server port, they will not be able to have both server instances active at the same
   // time.
   // This is managed automatically by the activateAP method.
 
-  byte meshWiFiChannel = 1; // The WiFi channel used by the mesh network. Valid values are integers from 1 to 13. Defaults to 1.
+  uint8  meshWiFiChannel = 1; // The WiFi channel used by the mesh network. Valid values are integers from 1 to 13. Defaults to 1.
   // WARNING: The ESP8266 has only one WiFi channel, and the the station/client mode is always prioritized for channel selection.
   // This can cause problems if several ESP8266WiFiMesh instances exist on the same ESP8266 and use different WiFi channels.
   // In such a case, whenever the station of one ESP8266WiFiMesh instance connects to an AP, it will silently force the

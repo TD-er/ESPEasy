@@ -5,7 +5,11 @@
 
 #ifdef USES_WIFI_MESH
 
+class ESP8266WiFiMesh;
+
 extern MeshSettingsStruct MeshSettings;
+
+extern ESP8266WiFiMesh* meshNode;
 
 #endif // ifdef USES_WIFI_MESH
 
