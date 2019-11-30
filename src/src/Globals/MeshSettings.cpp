@@ -1,7 +1,7 @@
 #include "../Globals/MeshSettings.h"
 
 #include <ESP8266WiFi.h>
-#include <ESP8266WiFiMesh.h>
+#include <TcpIpMeshBackend.h>
 #include <TypeConversionFunctions.h>
 
 
@@ -9,6 +9,6 @@
 
 MeshSettingsStruct MeshSettings;
 
-extern ESP8266WiFiMesh* meshNode = nullptr;
+TcpIpMeshBackend * tcpIpNode = nullptr;
 
 #endif // ifdef USES_WIFI_MESH
