@@ -369,7 +369,7 @@ void afterloadSettings() {
   set_mDNS(); // To update changes in hostname.
 
   #ifdef USES_WIFI_MESH
-  // FIXME TD-er: Must detect whether settings have been changed and if so, delete tcpIpNode
+  // FIXME TD-er: Must detect whether settings have been changed and if so, delete existing mesh node objects.
   bool force = false;
   createWiFiMeshNode(force);
   #endif

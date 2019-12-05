@@ -370,6 +370,13 @@ void processDisableAPmode() {
   if (timerAPoff == 0) { return; }
 
   if (WifiIsAP(WiFi.getMode())) {
+    #ifdef USES_WIFI_MESH
+    if (floodingMesh != nullptr || tcpIpNode != nullptr) {
+      // WiFi mesh probably active, so not disable AP mode
+      return;
+    }
+    #endif
+
     // disable AP after timeout and no clients connected.
     if (timeOutReached(timerAPoff) && (WiFi.softAPgetStationNum() == 0)) {
       setAP(false);

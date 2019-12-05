@@ -5,11 +5,13 @@
 
 #ifdef USES_WIFI_MESH
 
-class TcpIpMeshBackend ;
+class TcpIpMeshBackend;
+class FloodingMesh;
 
 extern MeshSettingsStruct MeshSettings;
 
-extern TcpIpMeshBackend* tcpIpNode;
+extern TcpIpMeshBackend *tcpIpNode;
+extern FloodingMesh     *floodingMesh;
 
 #endif // ifdef USES_WIFI_MESH
 

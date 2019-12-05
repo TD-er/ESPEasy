@@ -2,6 +2,7 @@
 
 #include <ESP8266WiFi.h>
 #include <TcpIpMeshBackend.h>
+#include <FloodingMesh.h>
 #include <TypeConversionFunctions.h>
 
 
@@ -9,6 +10,7 @@
 
 MeshSettingsStruct MeshSettings;
 
-TcpIpMeshBackend * tcpIpNode = nullptr;
+TcpIpMeshBackend *tcpIpNode    = nullptr;
+FloodingMesh     *floodingMesh = nullptr;
 
 #endif // ifdef USES_WIFI_MESH

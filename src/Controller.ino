@@ -8,6 +8,7 @@
 #include "src/Globals/Device.h"
 #include "src/Globals/MQTT.h"
 #include "src/Globals/Plugins.h"
+#include "src/Globals/MeshSettings.h"
 #include "src/Globals/Protocol.h"
 #include "_CPlugin_Helper.h"
 
@@ -90,6 +91,7 @@ bool validUserVar(struct EventStruct *event) {
 }
 
 #ifdef USES_MQTT
+
 /*********************************************************************************************\
 * Handle incoming MQTT messages
 \*********************************************************************************************/
@@ -467,13 +469,14 @@ void MQTTStatus(const String& status)
     MQTTpublish(enabledMqttController, pubname.c_str(), status.c_str(), mqtt_retainFlag);
   }
 }
-#endif //USES_MQTT
 
+#endif // USES_MQTT
 
 
 /*********************************************************************************************\
- * send all sensordata
+* send all sensordata
 \*********************************************************************************************/
+
 // void SensorSendAll()
 // {
 //   for (taskIndex_t x = 0; x < TASKS_MAX; x++)
@@ -488,35 +491,41 @@ void MQTTStatus(const String& status)
 \*********************************************************************************************/
 void SensorSendTask(taskIndex_t TaskIndex)
 {
-  if (!validTaskIndex(TaskIndex)) return;
+  if (!validTaskIndex(TaskIndex)) { return; }
   checkRAM(F("SensorSendTask"));
+
   if (Settings.TaskDeviceEnabled[TaskIndex])
   {
     byte varIndex = TaskIndex * VARS_PER_TASK;
 
-    bool success = false;
+    bool success                    = false;
     const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(TaskIndex);
-    if (!validDeviceIndex(DeviceIndex)) return;
+
+    if (!validDeviceIndex(DeviceIndex)) { return; }
 
     LoadTaskSettings(TaskIndex);
 
     struct EventStruct TempEvent;
-    TempEvent.TaskIndex = TaskIndex;
+    TempEvent.TaskIndex    = TaskIndex;
     TempEvent.BaseVarIndex = varIndex;
+
     // TempEvent.idx = Settings.TaskDeviceID[TaskIndex]; todo check
     TempEvent.sensorType = Device[DeviceIndex].VType;
 
     float preValue[VARS_PER_TASK]; // store values before change, in case we need it in the formula
-    for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++)
-      preValue[varNr] = UserVar[varIndex + varNr];
 
-    if(Settings.TaskDeviceDataFeed[TaskIndex] == 0)  // only read local connected sensorsfeeds
+    for (byte varNr = 0; varNr < VARS_PER_TASK; varNr++) {
+      preValue[varNr] = UserVar[varIndex + varNr];
+    }
+
+    if (Settings.TaskDeviceDataFeed[TaskIndex] == 0) // only read local connected sensorsfeeds
     {
       String dummy;
       success = PluginCall(PLUGIN_READ, &TempEvent, dummy);
     }
-    else
+    else {
       success = true;
+    }
 
     if (success)
     {
