@@ -9,6 +9,7 @@
 #include "src/Globals/MQTT.h"
 #include "src/Globals/Plugins.h"
 #include "src/Globals/MeshSettings.h"
+#include "src/WiFi/ESPEasyWiFiMesh.h"
 #include "src/Globals/Protocol.h"
 #include "_CPlugin_Helper.h"
 

@@ -132,7 +132,7 @@
 #include "ESPEasyWifi.h"
 
 #ifdef USES_WIFI_MESH
-#include <FloodingMesh.h>
+#include "src/WiFi/ESPEasyWiFiMesh.h"
 #endif
 
 #if FEATURE_ADC_VCC
@@ -720,13 +720,7 @@ void backgroundtasks()
   #endif
 
   #ifdef USES_WIFI_MESH
-  // The floodingMeshDelay() method performs all the background operations for the FloodingMesh (via FloodingMesh::performMeshMaintenance()).
-  // It is recommended to place one of these methods in the beginning of the loop(), unless there is a need to put them elsewhere.
-  // Among other things, the method cleans up old ESP-NOW log entries (freeing up RAM) and forwards received mesh messages.
-  // Note that depending on the amount of messages to forward and their length, this method can take tens or even hundreds of milliseconds to complete.
-  // More intense transmission activity and less frequent calls to performMeshMaintenance will likely cause the method to take longer to complete, so plan accordingly.
-  // The maintenance methods should not be used inside the meshMessageHandler callback, since they can alter the mesh node state. The framework will alert you during runtime if you make this mistake.
-  floodingMeshDelay(1);
+  meshDelay(1);
   #endif
 
   delay(0);

@@ -20,7 +20,6 @@ if os.path.isfile('src/Custom.h'):
   env.Append(CPPDEFINES=["USE_CUSTOM_H"])
 else:
   env.Append(CPPDEFINES=[
-    "USES_WIFI_MESH",
     "CONTROLLER_SET_ALL",
     "NOTIFIER_SET_NONE",
     "PLUGIN_SET_ONLY_SWITCH",

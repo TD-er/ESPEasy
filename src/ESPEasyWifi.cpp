@@ -2,6 +2,7 @@
 #include "ESPEasyNetwork.h"
 #include "ESPEasyWifi_ProcessEvent.h"
 #include "src/Globals/ESPEasyWiFiEvent.h"
+#include "src/WiFi/ESPEasyWiFiMesh.h"
 #include "ESPEasy-Globals.h"
 #include "ESPEasyWiFi_credentials.h"
 #include "src/DataStructs/TimingStats.h"

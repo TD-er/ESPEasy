@@ -5,12 +5,11 @@
 
 #ifdef USES_WIFI_MESH
 
-class TcpIpMeshBackend;
+#include "src/WiFi/ESPEasyWiFiMesh.h"
 class FloodingMesh;
 
 extern MeshSettingsStruct MeshSettings;
 
-extern TcpIpMeshBackend *tcpIpNode;
 extern FloodingMesh     *floodingMesh;
 
 #endif // ifdef USES_WIFI_MESH
