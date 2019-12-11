@@ -48,9 +48,9 @@ String getLabel(LabelType::Enum label) {
     case LabelType::IP_ADDRESS_SUBNET:      return F("IP / Subnet");
     case LabelType::GATEWAY:                return F("Gateway");
     case LabelType::CLIENT_IP:              return F("Client IP");
-    #ifdef FEATURE_MDNS
+  #ifdef FEATURE_MDNS
     case LabelType::M_DNS:                  return F("mDNS");
-    #endif
+  #endif
     case LabelType::DNS:                    return F("DNS");
     case LabelType::DNS_1:                  return F("DNS 1");
     case LabelType::DNS_2:                  return F("DNS 2");
@@ -71,6 +71,9 @@ String getLabel(LabelType::Enum label) {
     case LabelType::FORCE_WIFI_NOSLEEP:     return F("Force WiFi No Sleep");
     case LabelType::PERIODICAL_GRAT_ARP:    return F("Periodical send Gratuitous ARP");
     case LabelType::CONNECTION_FAIL_THRESH: return F("Connection Failure Threshold");
+  #ifdef USES_WIFI_MESH
+    case LabelType::FORCE_SEND_VIA_MESH:    return F("Force Send via Mesh");
+  #endif
 
     case LabelType::BUILD_DESC:             return F("Build");
     case LabelType::GIT_BUILD:              return F("Git Build");
@@ -193,6 +196,9 @@ String getValue(LabelType::Enum label) {
     case LabelType::FORCE_WIFI_NOSLEEP:     return jsonBool(Settings.WifiNoneSleep());
     case LabelType::PERIODICAL_GRAT_ARP:    return jsonBool(Settings.gratuitousARP());
     case LabelType::CONNECTION_FAIL_THRESH: return String(Settings.ConnectionFailuresThreshold);
+  #ifdef USES_WIFI_MESH
+    case LabelType::FORCE_SEND_VIA_MESH:    return jsonBool(Settings.ForceSendViaMesh());
+  #endif
 
     case LabelType::BUILD_DESC:             return String(BUILD);
     case LabelType::GIT_BUILD:              return String(F(BUILD_GIT));

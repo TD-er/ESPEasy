@@ -420,6 +420,9 @@ void handle_sysinfo_WiFiSettings() {
 # ifdef SUPPORT_ARP
   addRowLabelValue(LabelType::PERIODICAL_GRAT_ARP);
 # endif // ifdef SUPPORT_ARP
+# ifdef USES_WIFI_MESH
+  addRowLabelValue(LabelType::FORCE_SEND_VIA_MESH);
+# endif
   addRowLabelValue(LabelType::CONNECTION_FAIL_THRESH);
 }
 

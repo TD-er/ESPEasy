@@ -178,6 +178,9 @@ void handle_json()
 #ifdef SUPPORT_ARP
       stream_next_json_object_value(LabelType::PERIODICAL_GRAT_ARP);
 #endif // ifdef SUPPORT_ARP
+#ifdef USES_WIFI_MESH
+      stream_next_json_object_value(LabelType::FORCE_SEND_VIA_MESH);
+#endif
       stream_next_json_object_value(LabelType::CONNECTION_FAIL_THRESH);
       stream_last_json_object_value(LabelType::WIFI_RSSI);
       // TODO: PKR: Add ETH Objects

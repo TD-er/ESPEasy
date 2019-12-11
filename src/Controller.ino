@@ -138,6 +138,12 @@ void MQTTDisconnect()
 \*********************************************************************************************/
 bool MQTTConnect(controllerIndex_t controller_idx)
 {
+  #ifdef USES_WIFI_MESH
+  if (Settings.ForceSendViaMesh() && MeshSettings.enabled) {
+    return false;
+  }
+  #endif
+
   ++mqtt_reconnect_count;
   MakeControllerSettings(ControllerSettings);
   if (!AllocatedControllerSettings()) {

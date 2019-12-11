@@ -8,6 +8,7 @@
 
 #include "ESPEasyWiFiMesh.h"
 #include "../Globals/MeshSettings.h"
+#include "../../ESPEasy_Log.h"
 
 
 unsigned int requestNumber  = 0;
@@ -65,6 +66,7 @@ void createWiFiMeshNode(bool force) {
   }
 
   if (floodingMesh != nullptr) {
+    floodingMesh->setMessageLogSize(10); // FIXME TD-er: Must make this a setting.
     floodingMesh->begin();
     floodingMesh->activateAP();
 
@@ -90,61 +92,13 @@ void createWiFiMeshNode(bool force) {
  */
 bool meshMessageHandler(String& message, FloodingMesh& meshInstance) {
   int32_t delimiterIndex = message.indexOf(meshInstance.metadataDelimiter());
-
-  if (delimiterIndex == 0) {
-    Serial.print("Message received from STA MAC " + meshInstance.getEspnowMeshBackend().getSenderMac() + ": ");
-    Serial.println(message.substring(2, 102));
-
-    String potentialMac = message.substring(2, 14);
-
-    if (potentialMac >= theOneMac) {
-      if (potentialMac > theOneMac) {
-        theOne    = false;
-        theOneMac = potentialMac;
-      }
-
-      if (useLED && !theOne) {
-        bool ledState = message.charAt(1) == '1';
-        digitalWrite(LED_BUILTIN, ledState); // Turn LED on/off (LED_BUILTIN is active low)
-      }
-
-      return true;
-    } else {
-      return false;
-    }
-  } else if (delimiterIndex > 0) {
-    if (meshInstance.getOriginMac() == theOneMac) {
-      uint32_t totalBroadcasts = strtoul(message.c_str(), nullptr, 0); // strtoul stops reading input when an invalid character is
-                                                                       // discovered.
-
-      // Static variables are only initialized once.
-      static uint32_t firstBroadcast = totalBroadcasts;
-
-      if (totalBroadcasts - firstBroadcast >= 100) { // Wait a little to avoid start-up glitches
-        static uint32_t missedBroadcasts        = 1; // Starting at one to compensate for initial -1 below.
-        static uint32_t previousTotalBroadcasts = totalBroadcasts;
-        static uint32_t totalReceivedBroadcasts = 0;
-        totalReceivedBroadcasts++;
-
-        missedBroadcasts       += totalBroadcasts - previousTotalBroadcasts - 1; // We expect an increment by 1.
-        previousTotalBroadcasts = totalBroadcasts;
-
-        if (totalReceivedBroadcasts % 50 == 0) {
-          Serial.println("missed/total: " + String(missedBroadcasts) + '/' + String(totalReceivedBroadcasts));
-        }
-
-        if (totalReceivedBroadcasts % 500 == 0) {
-          Serial.println("Benchmark message: " + message.substring(0, 100));
-        }
-      }
-    }
-  } else {
-    // Only show first 100 characters because printing a large String takes a lot of time, which is a bad thing for a callback function.
-    // If you need to print the whole String it is better to store it and print it in the loop() later.
-    Serial.print("Message with origin " + meshInstance.getOriginMac() + " received: ");
-    Serial.println(message.substring(0, 100));
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    String log = F("Message received from STA MAC ");
+    log += meshInstance.getEspnowMeshBackend().getSenderMac();
+    log += ": ";
+    log += message.substring(delimiterIndex + 1, delimiterIndex + 100);
+    addLog(LOG_LEVEL_INFO, log);
   }
-
   return true;
 }
 
@@ -157,6 +111,7 @@ bool sendFloodingMeshBroadcast(const String& message)
     String tmp_message = String(floodingMesh->metadataDelimiter());
     floodingMesh->broadcast(tmp_message + message);
     floodingMeshDelay(20);
+    addLog(LOG_LEVEL_INFO, String(F("FloodMesh: ")) + message);
     return true;
   }
   return false;
