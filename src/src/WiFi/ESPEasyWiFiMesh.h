@@ -3,6 +3,11 @@
 
 #include "../../ESPEasy_common.h"
 
+enum mesh_message_type_t {
+  MESH_COMMAND,
+  MESH_HOSTINFO
+};
+
 class FloodingMesh;
 
 bool meshMessageHandler(String      & message,
@@ -18,6 +23,6 @@ void createWiFiMeshNode(bool force);
 
 bool meshMessageHandler(String& message, FloodingMesh& meshInstance);
 
-bool sendFloodingMeshBroadcast(const String& message);
+bool sendFloodingMeshBroadcast(mesh_message_type_t messageType, const String& message);
 
 #endif // WIFI_ESPEASYWIFIMESH_H

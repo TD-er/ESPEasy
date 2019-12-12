@@ -8,7 +8,10 @@
 
 #include "ESPEasyWiFiMesh.h"
 #include "../Globals/MeshSettings.h"
+#include "../DataStructs/EventValueSource.h"
 #include "../../ESPEasy_Log.h"
+#include "../../ESPEasy_fdwdecl.h"
+
 
 
 unsigned int requestNumber  = 0;
@@ -92,6 +95,17 @@ void createWiFiMeshNode(bool force) {
  */
 bool meshMessageHandler(String& message, FloodingMesh& meshInstance) {
   int32_t delimiterIndex = message.indexOf(meshInstance.metadataDelimiter());
+  if (delimiterIndex == -1) return false;
+  int intval;
+  if (!validIntFromString(message.substring(0, delimiterIndex), intval)) {
+    String log;
+    log = F("Mesh invalid messageType: ");
+    log += message.substring(0, delimiterIndex);
+    addLog(LOG_LEVEL_ERROR, log);
+    return false;
+  }
+  mesh_message_type_t messageType = static_cast<mesh_message_type_t>(intval);
+
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log = F("Message received from STA MAC ");
     log += meshInstance.getEspnowMeshBackend().getSenderMac();
@@ -99,16 +113,29 @@ bool meshMessageHandler(String& message, FloodingMesh& meshInstance) {
     log += message.substring(delimiterIndex + 1, delimiterIndex + 100);
     addLog(LOG_LEVEL_INFO, log);
   }
-  return true;
+
+  bool handled = false;
+
+  switch (messageType) {
+    case MESH_COMMAND:
+    {
+      handled = ExecuteCommand_internal(VALUE_SOURCE_MESH, message.substring(delimiterIndex + 1).c_str());
+    }
+    break;
+    case MESH_HOSTINFO:
+    break;
+  }
+  return !handled;
 }
 
 
-bool sendFloodingMeshBroadcast(const String& message)
+bool sendFloodingMeshBroadcast(mesh_message_type_t messageType, const String& message)
 {
 
   // FIXME TD-er: Must check for length of message.
   if (floodingMesh != nullptr) {
-    String tmp_message = String(floodingMesh->metadataDelimiter());
+    String tmp_message = String(messageType);
+    tmp_message += String(floodingMesh->metadataDelimiter());
     floodingMesh->broadcast(tmp_message + message);
     floodingMeshDelay(20);
     addLog(LOG_LEVEL_INFO, String(F("FloodMesh: ")) + message);
