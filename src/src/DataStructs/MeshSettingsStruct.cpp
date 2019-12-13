@@ -2,6 +2,7 @@
 
 #include "../../ESPEasy_common.h"
 #include "../DataStructs/ESPEasyLimits.h"
+#include "../../ESPEasy_fdwdecl.h"
 
 #ifdef USES_WIFI_MESH
 
@@ -18,6 +19,15 @@ void MeshSettingsStruct::validate() {
   ZERO_TERMINATE(MeshName);
   ZERO_TERMINATE(MeshPass);
   ZERO_TERMINATE(nodeId);
+}
+
+String MeshSettingsStruct::getNodeId() const {
+  if (nodeId[0] == 0) {
+    return "";
+  }
+  String result;
+  safe_strncpy(result, nodeId, 6);
+  return result;
 }
 
 #endif // ifdef USES_WIFI_MESH

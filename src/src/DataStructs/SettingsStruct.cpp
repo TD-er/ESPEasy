@@ -113,16 +113,6 @@ void SettingsStruct_tmpl<N_TASKS>::SendToHttp_ack(bool value) {
 }
 
 template<unsigned int N_TASKS>
-bool SettingsStruct_tmpl<N_TASKS>::ForceSendViaMesh() {
-  return getBitFromUL(VariousBits1, 11);
-}
-
-template<unsigned int N_TASKS>
-void SettingsStruct_tmpl<N_TASKS>::ForceSendViaMesh(bool value) {
-  setBitToUL(VariousBits1, 11, value);
-}
-
-template<unsigned int N_TASKS>
 void SettingsStruct_tmpl<N_TASKS>::validate() {
   if (UDPPort > 65535) { UDPPort = 0; }
 
@@ -262,7 +252,6 @@ void SettingsStruct_tmpl<N_TASKS>::clearMisc() {
   gratuitousARP(DEFAULT_GRATUITOUS_ARP);
   TolerantLastArgParse(DEFAULT_TOLERANT_LAST_ARG_PARSE);
   SendToHttp_ack(DEFAULT_SEND_TO_HTTP_ACK);
-  ForceSendViaMesh(DEFAULT_FORCE_SEND_VIA_MESH);
 }
 
 template<unsigned int N_TASKS>

@@ -497,10 +497,9 @@ void setWifiMode(WiFiMode_t wifimode) {
     // Mode has changed
     bool APmodeStarted = false;
     #ifdef USES_WIFI_MESH
-    if (MeshSettings.enabled && new_mode_AP_enabled && !meshActive()) {
-      APmodeStarted = true;
-      createWiFiMeshNode(false);
-    }
+    APmodeStarted = MeshSettings.enabled;
+    bool force = new_mode_AP_enabled && !meshActive();
+    createWiFiMeshNode(force);
     #endif
     if (!APmodeStarted) {
       setAPinternal(new_mode_AP_enabled);

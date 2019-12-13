@@ -31,6 +31,11 @@ String return_not_connected()
   return F("Not connected to WiFi");
 }
 
+String return_command_forwarded()
+{
+  return F("Command forwarded");
+}
+
 String return_result(struct EventStruct *event, const String& result)
 {
   serialPrintln(result);

@@ -60,6 +60,11 @@ struct MeshSettingsStruct
 
   byte staticIP[4]; // Static IP address of the node for the mesh network.
   byte bssid[6];    // BSSID of the preferred AP to conect to.
+
+  String getNodeId() const;
+
+  // Send via mesh and not via controller, even when connected to the network.
+  bool forceSendViaMesh = false;
 };
 #endif // ifdef USES_WIFI_MESH
 

@@ -10,6 +10,8 @@ String return_command_success();
 String return_command_failed();
 String return_incorrect_nr_arguments();
 String return_not_connected();
+String return_command_forwarded();
+
 String return_result(struct EventStruct *event,
                      const String      & result);
 String return_see_serial(struct EventStruct *event);

@@ -80,7 +80,7 @@ void handle_advanced() {
     Settings.gratuitousARP(isFormItemChecked(getInternalLabel(LabelType::PERIODICAL_GRAT_ARP)));
 #endif // ifdef SUPPORT_ARP
 #ifdef USES_WIFI_MESH
-    Settings.ForceSendViaMesh(isFormItemChecked(getInternalLabel(LabelType::FORCE_SEND_VIA_MESH)));
+    MeshSettings.forceSendViaMesh = isFormItemChecked(getInternalLabel(LabelType::FORCE_SEND_VIA_MESH));
 #endif
 
     addHtmlError(SaveSettings());
@@ -200,7 +200,7 @@ void handle_advanced() {
   addFormCheckBox(LabelType::PERIODICAL_GRAT_ARP, Settings.gratuitousARP());
 #endif // ifdef SUPPORT_ARP
 #ifdef USES_WIFI_MESH
-  addFormCheckBox(LabelType::FORCE_SEND_VIA_MESH, Settings.ForceSendViaMesh());
+  addFormCheckBox(LabelType::FORCE_SEND_VIA_MESH, MeshSettings.forceSendViaMesh);
 #endif
   addFormCheckBox(LabelType::CPU_ECO_MODE,        Settings.EcoPowerMode());
   addFormNote(F("Node may miss receiving packets with Eco mode enabled"));

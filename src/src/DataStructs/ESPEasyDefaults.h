@@ -94,9 +94,6 @@
 #ifndef DEFAULT_SEND_TO_HTTP_ACK
 #define DEFAULT_SEND_TO_HTTP_ACK         false // Wait for ack with SendToHttp command.
 #endif
-#ifndef DEFAULT_FORCE_SEND_VIA_MESH
-#define DEFAULT_FORCE_SEND_VIA_MESH      false  // Send via mesh and not via controller, even when connected to the network.
-#endif
 
 
 // --- Default Controller ------------------------------------------------------------------------------

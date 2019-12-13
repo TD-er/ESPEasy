@@ -17,10 +17,24 @@
 #include "../../ESPEasy_fdwdecl.h"
 #include "../../ESPEasy_Log.h"
 
+#ifdef USES_WIFI_MESH
+#include "../Globals/MeshSettings.h"
+#include "../WiFi/ESPEasyWiFiMesh.h"
+#endif
+
 
 
 String Command_MQTT_Publish(struct EventStruct *event, const char *Line)
 {
+  #ifdef USES_WIFI_MESH
+  // FIXME TD-er: Not sure whether this should be checked per command,
+  //  or maybe a separate check first to see what command can be handled local and what should be forwarded.
+  if (event->Source == VALUE_SOURCE_MESH) {
+    if ((MeshSettings.forceSendViaMesh || !MQTTclient.connected()) && meshActive()) {
+      return return_command_forwarded();
+    }
+  }
+  #endif
   // ToDo TD-er: Not sure about this function, but at least it sends to an existing MQTTclient
   controllerIndex_t enabledMqttController = firstEnabledMQTT_ControllerIndex();
 

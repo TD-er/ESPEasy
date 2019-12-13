@@ -370,7 +370,7 @@ void afterloadSettings() {
 
   #ifdef USES_WIFI_MESH
   // FIXME TD-er: Must detect whether settings have been changed and if so, delete existing mesh node objects.
-  bool force = false;
+  bool force = true;
   createWiFiMeshNode(force);
   #endif
 }

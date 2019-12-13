@@ -197,7 +197,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::PERIODICAL_GRAT_ARP:    return jsonBool(Settings.gratuitousARP());
     case LabelType::CONNECTION_FAIL_THRESH: return String(Settings.ConnectionFailuresThreshold);
   #ifdef USES_WIFI_MESH
-    case LabelType::FORCE_SEND_VIA_MESH:    return jsonBool(Settings.ForceSendViaMesh());
+    case LabelType::FORCE_SEND_VIA_MESH:    return jsonBool(MeshSettings.forceSendViaMesh);
   #endif
 
     case LabelType::BUILD_DESC:             return String(BUILD);

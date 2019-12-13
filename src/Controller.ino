@@ -139,7 +139,7 @@ void MQTTDisconnect()
 bool MQTTConnect(controllerIndex_t controller_idx)
 {
   #ifdef USES_WIFI_MESH
-  if (Settings.ForceSendViaMesh() && MeshSettings.enabled) {
+  if (MeshSettings.forceSendViaMesh && MeshSettings.enabled) {
     return false;
   }
   #endif
