@@ -23,7 +23,6 @@ else:
     "USES_WIFI_MESH",
     "CONTROLLER_SET_NONE",
     "USES_C002",  # Domoticz MQTT
-    "USES_C004",  # ThingSpeak
     "USES_C005",  # Home Assistant (openHAB) MQTT
 
     "NOTIFIER_SET_NONE",
