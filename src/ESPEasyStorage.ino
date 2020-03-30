@@ -152,7 +152,7 @@ String BuildFixes()
   if (Settings.Build < 20105) {
     Settings.I2C_clockSpeed = 400000;
   }
-  if (Settings.Build <= 20106) {
+  if (Settings.Build < 20106) {
     // ClientID is now defined in the controller settings.
     #ifdef USES_MQTT
     controllerIndex_t controller_idx = firstEnabledMQTT_ControllerIndex();
@@ -170,7 +170,10 @@ String BuildFixes()
       else {
         clientid  = F("ESPClient_%mac%");
       }
+      clientid = F(CONTROLLER_DEFAULT_CLIENTID);
       safe_strncpy(ControllerSettings.ClientID, clientid, sizeof(ControllerSettings.ClientID));
+      setControllerUser(controller_idx, ControllerSettings, F(DEFAULT_CONTROLLER_USER));
+      setControllerPass(controller_idx, ControllerSettings, F(DEFAULT_CONTROLLER_PASS));
 
       ControllerSettings.mqtt_uniqueMQTTclientIdReconnect(Settings.uniqueMQTTclientIdReconnect_unused());
       ControllerSettings.mqtt_retainFlag(Settings.MQTTRetainFlag_unused);
