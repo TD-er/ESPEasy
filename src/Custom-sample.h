@@ -142,6 +142,22 @@
 
 /*
  #######################################################################################################
+   Defining web interface
+ #######################################################################################################
+ */
+/*
+#define MENU_INDEX_MAIN_VISIBLE          true
+#define MENU_INDEX_CONFIG_VISIBLE        true
+#define MENU_INDEX_CONTROLLERS_VISIBLE   true
+#define MENU_INDEX_HARDWARE_VISIBLE      true
+#define MENU_INDEX_DEVICES_VISIBLE       true
+#define MENU_INDEX_RULES_VISIBLE         true
+#define MENU_INDEX_NOTIFICATIONS_VISIBLE true
+#define MENU_INDEX_TOOLS_VISIBLE         true
+*/
+
+/*
+ #######################################################################################################
    Special settings  (rendering settings incompatible with other builds)
  #######################################################################################################
  */

@@ -9,6 +9,7 @@
 #include "src/Globals/TXBuffer.h"
 #include "src/Static/WebStaticData.h"
 #include "src/DataStructs/SettingsType.h"
+#include "src/Helpers/WebServer_menu.h"
 
 
 
@@ -464,58 +465,7 @@ void getErrorNotifications() {
   // Check checksum of stored settings.
 }
 
-#define MENU_INDEX_MAIN          0
-#define MENU_INDEX_CONFIG        1
-#define MENU_INDEX_CONTROLLERS   2
-#define MENU_INDEX_HARDWARE      3
-#define MENU_INDEX_DEVICES       4
-#define MENU_INDEX_RULES         5
-#define MENU_INDEX_NOTIFICATIONS 6
-#define MENU_INDEX_TOOLS         7
 static byte navMenuIndex = MENU_INDEX_MAIN;
-
-// See https://github.com/letscontrolit/ESPEasy/issues/1650
-String getGpMenuIcon(byte index) {
-  switch (index) {
-    case MENU_INDEX_MAIN          : return F("&#8962;");  
-    case MENU_INDEX_CONFIG        : return F("&#9881;");  
-    case MENU_INDEX_CONTROLLERS   : return F("&#128172;");
-    case MENU_INDEX_HARDWARE      : return F("&#128204;");
-    case MENU_INDEX_DEVICES       : return F("&#128268;");
-    case MENU_INDEX_RULES         : return F("&#10740;"); 
-    case MENU_INDEX_NOTIFICATIONS : return F("&#9993;");  
-    case MENU_INDEX_TOOLS         : return F("&#128295;");
-  }
-  return "";
-}
-
-String getGpMenuLabel(byte index) {
-  switch (index) {
-    case MENU_INDEX_MAIN          : return F("Main");         
-    case MENU_INDEX_CONFIG        : return F("Config");       
-    case MENU_INDEX_CONTROLLERS   : return F("Controllers");  
-    case MENU_INDEX_HARDWARE      : return F("Hardware");     
-    case MENU_INDEX_DEVICES       : return F("Devices");      
-    case MENU_INDEX_RULES         : return F("Rules");        
-    case MENU_INDEX_NOTIFICATIONS : return F("Notifications");
-    case MENU_INDEX_TOOLS         : return F("Tools");        
-  }
-  return "";
-}
-
-String getGpMenuURL(byte index) {
-  switch (index) {
-    case MENU_INDEX_MAIN          : return F("/");             
-    case MENU_INDEX_CONFIG        : return F("/config");       
-    case MENU_INDEX_CONTROLLERS   : return F("/controllers");  
-    case MENU_INDEX_HARDWARE      : return F("/hardware");     
-    case MENU_INDEX_DEVICES       : return F("/devices");      
-    case MENU_INDEX_RULES         : return F("/rules");        
-    case MENU_INDEX_NOTIFICATIONS : return F("/notifications");
-    case MENU_INDEX_TOOLS         : return F("/tools");        
-  }
-  return "";
-}
 
 void getWebPageTemplateVar(const String& varName)
 {
@@ -542,12 +492,10 @@ void getWebPageTemplateVar(const String& varName)
       if ((i == MENU_INDEX_RULES) && !Settings.UseRules) { // hide rules menu item
         continue;
       }
-#ifdef NOTIFIER_SET_NONE
-
-      if (i == MENU_INDEX_NOTIFICATIONS) { // hide notifications menu item
+      if (!GpMenuVisible(i)) {
+        // hide menu item
         continue;
       }
-#endif // ifdef NOTIFIER_SET_NONE
 
       addHtml(F("<a class='menu"));
 
