@@ -113,4 +113,6 @@ void addSelector(const String& id,
                  boolean       reloadonchange,
                  bool          enabled);
 
+boolean isLoggedIn();
+
 #endif // WEBSERVER_FWD_DECL_H
