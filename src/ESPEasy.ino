@@ -427,7 +427,7 @@ void setup()
     rulesProcessing(event); // TD-er: Process events in the setup() now.
   }
 
-  writeDefaultCSS();
+  // writeDefaultCSS(); // TODO TD-er: Make it possible to dump internal CSS to SPIFFS.
 
   UseRTOSMultitasking = Settings.UseRTOSMultitasking;
   #ifdef USE_RTOS_MULTITASKING

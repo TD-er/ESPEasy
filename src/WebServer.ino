@@ -495,7 +495,7 @@ void getWebPageTemplateVar(const String& varName)
     // no return string - eat var name
   }
 }
-
+/*
 void writeDefaultCSS(void)
 {
   return; // TODO
@@ -521,6 +521,7 @@ void writeDefaultCSS(void)
     }
   }
 }
+*/
 
 // ********************************************************************************
 // Functions to stream JSON directly to TXBuffer

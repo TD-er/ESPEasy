@@ -172,6 +172,9 @@
 #define WEBPAGE_TEMPLATE_AP_HEADER      "<header class='apheader'><h1>Welcome to ESP Easy Mega AP</h1>"
 
 #define WEBPAGE_TEMPLATE_HIDE_HELP_BUTTON
+
+// Use minified CSS directly in the binary.
+#define WEBPAGE_TEMPLATE_DEFAULT_MIN_CSS ""
 */
 
 /*
