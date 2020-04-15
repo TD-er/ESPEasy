@@ -446,19 +446,27 @@ void getWebPageTemplateVar(const String& varName)
 
   else if (varName == F("css"))
   {
-    if (ESPEASY_FS.exists(F("esp.css"))) // now css is written in writeDefaultCSS() to FS and always present
-    // if (0) //TODO
+    String cssFile = F("esp.css");
+    addHtml(F("<style>"));
+    if (ESPEASY_FS.exists(cssFile))
     {
-      addHtml(F("<link rel=\"stylesheet\" type=\"text/css\" href=\"esp.css\">"));
+      fs::File f = tryOpenFile(cssFile, "r");
+      if (f) {
+        while (f.available()) { 
+          TXBuffer += (char)f.read();
+        }
+        f.close();
+      }
     }
     else
     {
-      addHtml(F("<style>"));
-
-      // Send CSS per chunk to avoid sending either too short or too large strings.
+      #ifdef WEBPAGE_TEMPLATE_DEFAULT_MIN_CSS
+      TXBuffer += F(WEBPAGE_TEMPLATE_DEFAULT_MIN_CSS);
+      #else
       TXBuffer += DATA_ESPEASY_DEFAULT_MIN_CSS;
-      addHtml(F("</style>"));
+      #endif
     }
+    addHtml(F("</style>"));
   }
 
 
