@@ -102,15 +102,15 @@ void handle_config() {
 
     #ifdef USES_WIFI_MESH
     {
-      String meshname = WebServer.arg(F("meshname"));
+      String meshname = web_server.arg(F("meshname"));
       meshname.trim();
       safe_strncpy(MeshSettings.MeshName, meshname.c_str(), sizeof(MeshSettings.MeshName));
-      String meshnodeid = WebServer.arg(F("meshnodeid"));
+      String meshnodeid = web_server.arg(F("meshnodeid"));
       meshnodeid.trim();
       safe_strncpy(MeshSettings.nodeId, meshnodeid.c_str(), sizeof(MeshSettings.nodeId));
       copyFormPassword(F("meshpass"), MeshSettings.MeshPass, sizeof(MeshSettings.MeshPass));
 
-      String meshStaticIP      = WebServer.arg(F("mesh_ip"));
+      String meshStaticIP      = web_server.arg(F("mesh_ip"));
       if (meshStaticIP.length() != 0)
         str2ip(meshStaticIP, MeshSettings.staticIP);
 
