@@ -39,11 +39,16 @@ if [ ! -d ${SRC} ]; then
   git clone --depth=50 --branch=${BRANCH} ${REPO} ${SRC}
 fi
 
+cd ${SRC}
+git checkout mega
+git fetch
+git pull
+
 # Activate Python virtual environment and install/upgrade packages
 source ${VENV}/bin/activate
 pip install -U platformio
+pip install -r ${SRC}/requirements.txt
 #pip install -r ${SRC}/docs/requirements.txt
-
 
 # Update platformio
 cd ${SRC}
