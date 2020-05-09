@@ -37,6 +37,7 @@ else:
     "USES_P082",  # GPS
     "USES_P087",  # Serial Proxy
     "USES_P097",  # Touch (ESP32)
+    "USES_P098",  # ESPEasy-Now Reader
 
     "USES_C019",  # ESPEasy-Now
 
