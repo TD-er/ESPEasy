@@ -44,6 +44,7 @@ else:
     "USES_C016",  # Cache Controller
     "USES_C018",  # TTN/RN2483
     "USES_C015",  # TTN/RN2483
+    "USES_C019",  # ESPEasy-Now
 
     "FEATURE_MDNS",
     "FEATURE_SD",
