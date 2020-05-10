@@ -15,6 +15,8 @@
 #include "src/Helpers/Scheduler.h"
 #include "src/Helpers/StringConverter.h"
 
+#include "src/Globals/ESPEasy_now_state.h"
+
 bool unprocessedWifiEvents() {
   if (processedConnect && processedDisconnect && processedGotIP && processedDHCPTimeout)
   {

@@ -11,6 +11,15 @@
 #include "src/Globals/Plugins.h"
 #include "src/Globals/Protocol.h"
 #include "_CPlugin_Helper.h"
+#include "src/Helpers/ESPEasy_now.h"
+
+
+#ifndef ESPEASY_MESH_PEER
+#define ESPEASY_MESH_PEER {0xA2, 0x20, 0xA6, 0x19, 0x2A, 0xBF}
+#endif
+
+static uint8_t PEER[] ESPEASY_MESH_PEER;
+
 
 // ********************************************************************************
 // Interface for Sending to Controllers
