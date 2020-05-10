@@ -241,3 +241,13 @@ void ControllerSettingsStruct::useExtendedCredentials(bool value)
 {
   bitWrite(MQTT_flags, 6, value);
 }
+
+bool ControllerSettingsStruct::enableESPEasyNowFallback() const
+{
+  return bitRead(MQTT_flags, 7);
+}
+
+void ControllerSettingsStruct::enableESPEasyNowFallback(bool value)
+{
+  bitWrite(MQTT_flags, 7, value);
+}

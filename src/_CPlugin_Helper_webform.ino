@@ -50,6 +50,7 @@ String getControllerParameterName(protocolIndex_t ProtocolIndex, ControllerSetti
     case ControllerSettingsStruct::CONTROLLER_USE_EXTENDED_CREDENTIALS: name = F("Use Extended Credentials");  break;
     case ControllerSettingsStruct::CONTROLLER_TIMEOUT:                  name = F("Client Timeout");         break;
     case ControllerSettingsStruct::CONTROLLER_SAMPLE_SET_INITIATOR:     name = F("Sample Set Initiator");   break;
+    case ControllerSettingsStruct::CONTROLLER_ENABLE_ESPEASY_NOW_FALLBACK: name = F("Enable ESPEasy-Now Fallback");   break;
 
     case ControllerSettingsStruct::CONTROLLER_ENABLED:
 
@@ -217,6 +218,9 @@ void addControllerParameterForm(const ControllerSettingsStruct& ControllerSettin
     case ControllerSettingsStruct::CONTROLLER_SAMPLE_SET_INITIATOR:
       addTaskSelectBox(displayName, internalName, ControllerSettings.SampleSetInitiator);
       break;
+    case ControllerSettingsStruct::CONTROLLER_ENABLE_ESPEASY_NOW_FALLBACK:
+      addFormCheckBox(displayName, internalName, ControllerSettings.enableESPEasyNowFallback());
+      break;
     case ControllerSettingsStruct::CONTROLLER_ENABLED:
       addFormCheckBox(displayName, internalName, Settings.ControllerEnabled[controllerindex]);
       break;
@@ -325,6 +329,9 @@ void saveControllerParameterForm(ControllerSettingsStruct& ControllerSettings, c
       break;
     case ControllerSettingsStruct::CONTROLLER_SAMPLE_SET_INITIATOR:
       ControllerSettings.SampleSetInitiator = getFormItemInt(internalName, ControllerSettings.SampleSetInitiator);
+      break;
+    case ControllerSettingsStruct::CONTROLLER_ENABLE_ESPEASY_NOW_FALLBACK:
+      ControllerSettings.enableESPEasyNowFallback(isFormItemChecked(internalName));
       break;
     case ControllerSettingsStruct::CONTROLLER_ENABLED:
       Settings.ControllerEnabled[controllerindex] = isFormItemChecked(internalName);

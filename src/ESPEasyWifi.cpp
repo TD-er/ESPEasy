@@ -248,6 +248,16 @@ bool prepareWiFi() {
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
   }
 
+  #ifdef USES_ESPEASY_NOW
+  if (plugin_EspEasy_now_enabled) { 
+    setAP(true);
+    WiFi.softAP("ESPNOW", nullptr, 1);
+    WiFi.softAPdisconnect(false);
+    WifiEspNow.begin();
+  }
+  #endif
+
+
   #endif // if defined(ESP8266)
   #if defined(ESP32)
   WiFi.setHostname(hostname);
@@ -382,6 +392,11 @@ void initWiFi()
 // ********************************************************************************
 void WifiDisconnect()
 {
+  // FIXME TD-er: Disconnect processing is done in several places.
+  #ifdef USES_ESPEASY_NOW
+  WifiEspNow.end();
+  use_EspEasy_now = false;
+  #endif
   #if defined(ESP32)
   WiFi.disconnect();
   WiFi.removeEvent(wm_event_id);

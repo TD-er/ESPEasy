@@ -82,6 +82,7 @@ struct ControllerSettingsStruct
     CONTROLLER_CLEAN_SESSION,
     CONTROLLER_TIMEOUT,
     CONTROLLER_SAMPLE_SET_INITIATOR,
+    CONTROLLER_ENABLE_ESPEASY_NOW_FALLBACK,
 
     // Keep this as last, is used to loop over all parameters
     CONTROLLER_ENABLED
@@ -128,6 +129,9 @@ struct ControllerSettingsStruct
 
   bool      useExtendedCredentials() const;
   void      useExtendedCredentials(bool value);
+
+  bool      enableESPEasyNowFallback() const;
+  void      enableESPEasyNowFallback(bool value);
 
   boolean      UseDNS;
   byte         IP[4];
