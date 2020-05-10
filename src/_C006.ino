@@ -101,8 +101,6 @@ bool CPlugin_006(CPlugin::Function function, struct EventStruct *event, String& 
         String pubname = CPlugin_006_pubname;
         bool mqtt_retainFlag = CPlugin_006_mqtt_retainFlag;
 
-        statusLED(true);
-
         if (ExtraTaskSettings.TaskIndex != event->TaskIndex) {
           String dummy;
           PluginCall(PLUGIN_GET_DEVICEVALUENAMES, event, dummy);
