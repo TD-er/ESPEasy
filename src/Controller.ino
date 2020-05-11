@@ -11,7 +11,7 @@
 #include "src/Globals/Plugins.h"
 #include "src/Globals/Protocol.h"
 #include "_CPlugin_Helper.h"
-#include "src/Helpers/ESPEasy_now.h"
+#include "src/Globals/ESPEasy_now_handler.h"
 
 
 
