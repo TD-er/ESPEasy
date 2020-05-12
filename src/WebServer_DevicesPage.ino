@@ -416,7 +416,7 @@ void handle_devicess_ShowAllTasksTable(byte page)
 
             if (it != Nodes.end()) {
               addHtml(F(" - "));
-              addHtml(it->second.nodeName);
+              addHtml(it->second.getNodeName());
             } else {
               addHtml(F(" - Not Seen recently"));
             }
@@ -726,7 +726,7 @@ void handle_devices_TaskSettingsPage(taskIndex_t taskIndex, byte page)
         NodesMap::iterator it = Nodes.find(remoteUnit);
 
         if (it != Nodes.end()) {
-          addUnit(it->second.nodeName);
+          addUnit(it->second.getNodeName());
         } else {
           addUnit(F("Unknown Unit Name"));
         }

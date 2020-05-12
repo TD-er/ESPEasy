@@ -179,7 +179,7 @@ void handle_root() {
           addHtml(Settings.Name);
         }
         else {
-          addHtml(it->second.nodeName);
+          addHtml(it->second.getNodeName());
         }
         html_TD();
 
@@ -187,7 +187,7 @@ void handle_root() {
           addHtml(String(it->second.build));
         }
         html_TD();
-        addHtml(getNodeTypeDisplayString(it->second.nodeType));
+        addHtml(it->second.getNodeTypeDisplayString());
         html_TD();
         html_add_wide_button_prefix();
         {
@@ -202,7 +202,7 @@ void handle_root() {
             html += String(port);
           }
           html += "'>";
-          html += it->second.ip.toString();
+          html += it->second.IP().toString();
           html += "</a>";
           addHtml(html);
         }
