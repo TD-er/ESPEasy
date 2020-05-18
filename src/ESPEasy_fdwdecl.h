@@ -123,6 +123,7 @@ void flushAndDisconnectAllClients();
 bool saveUserVarToRTC();
 
 int calc_CRC16(const char *ptr, int count);
+uint32_t calc_CRC32(const uint8_t *data, size_t length);
 
 // Used in src/Commands/*
 void process_serialWriteBuffer();
