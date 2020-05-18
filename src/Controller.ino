@@ -87,6 +87,7 @@ void sendData(struct EventStruct *event)
 // ********************************************************************************
 void sendData_checkDuplicates(struct EventStruct *event, const String& compare_key)
 {
+#ifdef USES_ESPEASY_NOW
   uint32_t key = SendData_DuplicateChecker.add(event, compare_key);
   if (key != SendData_DuplicateChecker_struct::DUPLICATE_CHECKER_INVALID_KEY) {
     // Must send out request to other nodes to see if any other has already processed it.
@@ -96,6 +97,9 @@ void sendData_checkDuplicates(struct EventStruct *event, const String& compare_k
       ESPEasy_Now_DuplicateCheck::message_t::KeyToCheck, 
       broadcastMac);
   }
+#else
+  sendData(event);
+#endif
 }
 
 bool validUserVar(struct EventStruct *event) {
