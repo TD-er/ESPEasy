@@ -6,13 +6,15 @@
 
 #include "../Helpers/ESPEasy_time_calc.h"
 
+NodeStruct::NodeStruct() : ESPEasyNowPeer(0), useAP_ESPEasyNow(0), scaled_rssi(0)
+{}
 
 bool NodeStruct::validate() {
   if (build < 20107) {
     // webserverPort introduced in 20107
-    webserverPort = 80;
-    load          = 0;
-    distance      = 255;
+    webgui_portnumber = 80;
+    load              = 0;
+    distance          = 255;
   }
 
   // FIXME TD-er: Must make some sanity checks to see if it is a valid message
@@ -20,7 +22,7 @@ bool NodeStruct::validate() {
 }
 
 void NodeStruct::setLocalData() {
-  WiFi.macAddress(mac);
+  WiFi.macAddress(sta_mac);
   WiFi.softAPmacAddress(ap_mac);
   {
     IPAddress localIP = WiFi.localIP();
@@ -29,13 +31,14 @@ void NodeStruct::setLocalData() {
       ip[i] = localIP[i];
     }
   }
+  channel = WiFi.channel();
 
   unit  = Settings.Unit;
   build = Settings.Build;
   memcpy(nodeName, Settings.Name, 25);
   nodeType = NODE_TYPE_ID;
 
-  //  webserverPort = Settings.WebserverPort; // PR #3053
+  webgui_portnumber = Settings.WebserverPort;
   int load_int = getCPUload() * 2.55;
 
   if (load_int > 255) {
@@ -86,6 +89,10 @@ IPAddress NodeStruct::IP() const {
   return IPAddress(ip[0], ip[1], ip[2], ip[3]);
 }
 
+MAC_address NodeStruct::STA_MAC() const {
+  return MAC_address(sta_mac);
+}
+
 unsigned long NodeStruct::getAge() const {
   return timePassedSince(lastUpdated);
 }
@@ -108,4 +115,64 @@ String NodeStruct::getSummary() const {
   res += F(" dst: ");
   res += distance;
   return res;
+}
+
+bool NodeStruct::setESPEasyNow_mac(const MAC_address& received_mac)
+{
+  if (received_mac == sta_mac) {
+    ESPEasyNowPeer   = 1;
+    useAP_ESPEasyNow = 0;
+    return true;
+  }
+
+  if (received_mac == ap_mac) {
+    ESPEasyNowPeer   = 1;
+    useAP_ESPEasyNow = 1;
+    return true;
+  }
+  return false;
+}
+
+int8_t NodeStruct::getRSSI() const
+{
+  if (scaled_rssi == 0) {
+    return 0; // Not set
+  }
+
+  if (scaled_rssi == 0x3F) {
+    return 31; // Error state
+  }
+
+  // scaled_rssi = 1 ... 62
+  // output = -38 ... -99
+  int8_t rssi = scaled_rssi + 37;
+  return rssi * -1;
+}
+
+void NodeStruct::setRSSI(int8_t rssi)
+{
+  if (rssi == 0) {
+    // Not set
+    scaled_rssi = 0;
+    return;
+  }
+
+  if (rssi > 0) {
+    // Error state
+    scaled_rssi = 0x3F;
+    return;
+  }
+  rssi *= -1;
+  rssi -= 37;
+
+  if (rssi < 1) {
+    scaled_rssi = 1;
+    return;
+  }
+
+  if (rssi >= 0x3F) {
+    scaled_rssi = 0x3F - 1;
+    return;
+  }
+  scaled_rssi = rssi;
 }

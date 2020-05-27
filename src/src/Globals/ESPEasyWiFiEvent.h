@@ -5,6 +5,8 @@
 #include <IPAddress.h>
 #include <stdint.h>
 
+#include "../DataStructs/MAC_address.h"
+
 // WifiStatus
 #define ESPEASY_WIFI_DISCONNECTED            0
 // Bit numbers for WiFi status
@@ -93,8 +95,8 @@ extern unsigned long lastGetIPmoment;
 extern unsigned long lastGetScanMoment;
 extern unsigned long lastConnectedDuration;
 extern bool intent_to_reboot;
-extern uint8_t lastMacConnectedAPmode[6];
-extern uint8_t lastMacDisconnectedAPmode[6];
+extern MAC_address lastMacConnectedAPmode;
+extern MAC_address lastMacDisconnectedAPmode;
 
 
 // Semaphore like bools for processing data gathered from WiFi events.

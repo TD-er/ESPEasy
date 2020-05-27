@@ -8,6 +8,7 @@
 
 #include "src/Helpers/CompiletimeDefines.h"
 #include "src/Helpers/Scheduler.h"
+#include "src/Globals/ESPEasy_now_state.h"
 
 String getInternalLabel(LabelType::Enum label, char replaceSpace) {
   return to_internal_string(getLabel(label), replaceSpace);
@@ -74,6 +75,10 @@ String getLabel(LabelType::Enum label) {
     case LabelType::FORCE_WIFI_NOSLEEP:     return F("Force WiFi No Sleep");
     case LabelType::PERIODICAL_GRAT_ARP:    return F("Periodical send Gratuitous ARP");
     case LabelType::CONNECTION_FAIL_THRESH: return F("Connection Failure Threshold");
+    #ifdef USES_ESPEASY_NOW
+    case LabelType::USE_ESPEASY_NOW:        return F("Use ESPEasy-Now");
+    case LabelType::TEMP_DISABLE_ESPEASY_NOW: return F("Temporary disable ESPEasy-Now");
+    #endif
 
     case LabelType::BUILD_DESC:             return F("Build");
     case LabelType::GIT_BUILD:              return F("Git Build");
@@ -196,6 +201,11 @@ String getValue(LabelType::Enum label) {
     case LabelType::RESTART_WIFI_LOST_CONN: return jsonBool(Settings.WiFiRestart_connection_lost());
     case LabelType::FORCE_WIFI_NOSLEEP:     return jsonBool(Settings.WifiNoneSleep());
     case LabelType::PERIODICAL_GRAT_ARP:    return jsonBool(Settings.gratuitousARP());
+    #ifdef USES_ESPEASY_NOW
+    case LabelType::USE_ESPEASY_NOW:        return jsonBool(Settings.UseESPEasyNow());
+    case LabelType::TEMP_DISABLE_ESPEASY_NOW: return jsonBool(temp_disable_EspEasy_now_timer != 0);
+    #endif
+
     case LabelType::CONNECTION_FAIL_THRESH: return String(Settings.ConnectionFailuresThreshold);
 
     case LabelType::BUILD_DESC:             return String(BUILD);

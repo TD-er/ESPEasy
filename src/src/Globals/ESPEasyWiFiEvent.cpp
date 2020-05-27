@@ -38,8 +38,8 @@ unsigned long lastGetIPmoment             = 0;
 unsigned long lastGetScanMoment           = 0;
 unsigned long lastConnectedDuration       = 0;
 bool intent_to_reboot                     = false;
-uint8_t lastMacConnectedAPmode[6]         = { 0 };
-uint8_t lastMacDisconnectedAPmode[6]      = { 0 };
+MAC_address lastMacConnectedAPmode;
+MAC_address lastMacDisconnectedAPmode;
 
 
 // Semaphore like bools for processing data gathered from WiFi events.

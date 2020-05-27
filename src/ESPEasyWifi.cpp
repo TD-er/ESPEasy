@@ -247,9 +247,16 @@ bool prepareWiFi() {
     // Reset to default power mode requires a reboot since setting it to WIFI_LIGHT_SLEEP will cause a crash.
     WiFi.setSleepMode(WIFI_NONE_SLEEP);
   }
+  #endif // if defined(ESP8266)
+
+  #if defined(ESP32)
+  WiFi.setHostname(hostname);
+  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+  #endif // if defined(ESP32)
+  
 
   #ifdef USES_ESPEASY_NOW
-  if (plugin_EspEasy_now_enabled) { 
+  if (Settings.UseESPEasyNow()) { 
     setAP(true);
     WiFi.softAP("ESPNOW", nullptr, 1);
     WiFi.softAPdisconnect(false);
@@ -258,13 +265,7 @@ bool prepareWiFi() {
   #endif
 
 
-  #endif // if defined(ESP8266)
-  #if defined(ESP32)
-  WiFi.setHostname(hostname);
-  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
-  #endif // if defined(ESP32)
-
-  if (RTC.lastWiFiChannel == 0 && wifi_connect_attempt <= 1) {
+  if (RTC.lastWiFiChannel != 0 && wifi_connect_attempt <= 1) {
     WifiScan(false, true);
   }
   setConnectionSpeed();
@@ -414,25 +415,49 @@ void WifiDisconnect()
 // Scan WiFi network
 // ********************************************************************************
 void WifiScan(bool async, bool quick) {
+  uint8_t channel = 0; // Default to scan all channels
+  if (quick) {
+    #ifdef ESP8266
+    // Only scan a single channel if the RTC.lastWiFiChannel is known to speed up connection time.
+    channel = RTC.lastWiFiChannel;
+    #else
+    // ESP32 RTC is not yet supported in ESPEasy
+    #endif
+  }
+  WifiScan_channel(channel, async);
+}
+
+// ********************************************************************************
+// Scan WiFi network async, one channel at a time
+// ********************************************************************************
+void WifiScan_channel(uint8_t channel, bool async) {
   if (WiFi.scanComplete() == -1) { 
     // Scan still busy
     return;
   }
-  addLog(LOG_LEVEL_INFO, F("WIFI  : Start network scan"));
-  bool show_hidden         = true;
+  if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+    String log;
+    log = F("WIFI  : Start network scan");
+    if (channel != 0) {
+      log += F(" channel ");
+      log += channel;
+    }
+    addLog(LOG_LEVEL_INFO, log);
+  }
+  bool show_hidden  = true;
   processedScanDone = false;
   lastGetScanMoment = millis();
-  if (quick) {
-    #ifdef ESP8266
-    // Only scan a single channel if the RTC.lastWiFiChannel is known to speed up connection time.
-    WiFi.scanNetworks(async, show_hidden, RTC.lastWiFiChannel);
-    #else
-    WiFi.scanNetworks(async, show_hidden);
-    #endif
-  } else {
-    WiFi.scanNetworks(async, show_hidden);
-  }
+  #ifdef ESP8266
+  WiFi.scanNetworks(async, show_hidden, channel);
+  #else
+  bool passive = false;
+  uint32_t max_ms_per_chan = 300;
+  // FIXME TD-er: The current installed ESP32 core does not yet support channel as parameter
+  WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan);
+  //WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan, channel);
+  #endif
 }
+
 
 // ********************************************************************************
 // Scan all Wifi Access Points
@@ -463,6 +488,9 @@ void WifiScan()
     }
   }
   serialPrintln("");
+#ifdef USES_ESPEASY_NOW
+  ESPEasy_now_handler.addPeerFromWiFiScan();
+#endif
 }
 
 // ********************************************************************************
