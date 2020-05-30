@@ -17,7 +17,9 @@ void P094_data_struct::reset() {
   }
 }
 
-bool P094_data_struct::init(const int16_t serial_rx, const int16_t serial_tx, unsigned long baudrate) {
+bool P094_data_struct::init(const int16_t serial_rx, 
+                            const int16_t serial_tx, 
+                            unsigned long baudrate) {
   if ((serial_rx < 0) && (serial_tx < 0)) {
     return false;
   }
@@ -447,6 +449,10 @@ bool P094_data_struct::max_length_reached() const {
 
 size_t P094_data_struct::P094_Get_filter_base_index(size_t filterLine) {
   return filterLine * P094_ITEMS_PER_FILTER + P094_FIRST_FILTER_POS;
+}
+
+uint32_t P094_data_struct::getDebugCounter() {
+  return debug_counter++;
 }
 
 #endif // USES_P094
