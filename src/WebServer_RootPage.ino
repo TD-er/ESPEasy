@@ -159,10 +159,13 @@ void handle_root() {
     html_table_header("IP", 160); // Should fit "255.255.255.255"
     html_table_header("Load");
     html_table_header("Age (s)");
+    #ifdef USES_ESPEASY_NOW
+    html_table_header("Dist");
+    #endif
 
     for (auto it = Nodes.begin(); it != Nodes.end(); ++it)
     {
-      if (it->second.ip[0] != 0)
+      if (it->second.valid())
       {
         bool isThisUnit = it->first == Settings.Unit;
 
@@ -191,8 +194,9 @@ void handle_root() {
         html_TD();
         addHtml(it->second.getNodeTypeDisplayString());
         html_TD();
-        html_add_wide_button_prefix();
+        if (it->second.ip[0] != 0)
         {
+          html_add_wide_button_prefix();
           String html;
           html.reserve(64);
 
@@ -207,11 +211,26 @@ void handle_root() {
           html += it->second.IP().toString();
           html += "</a>";
           addHtml(html);
+        } else if (it->second.ESPEasyNowPeer) {
+          addHtml(F("ESPEasy-Now "));
+          addHtml(it->second.ESPEasy_Now_MAC().toString());
+          addHtml(F(" (ch: "));
+          addHtml(String(it->second.channel));
+          addHtml(F(")"));
         }
         html_TD();
-        addHtml(String(it->second.getLoad()));
+        const float load = it->second.getLoad();
+        if (load > 0.1) {
+          addHtml(String(it->second.getLoad()));
+        }
         html_TD();
         addHtml(String(it->second.getAge()/1000)); // time in seconds
+        #ifdef USES_ESPEASY_NOW
+        html_TD();
+        if (it->second.distance != 255) {
+          addHtml(String(it->second.distance)); 
+        }
+        #endif
       }
     }
 

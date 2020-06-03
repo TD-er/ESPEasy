@@ -23,6 +23,7 @@ struct __attribute__((__packed__)) NodeStruct
 {
   NodeStruct();
 
+  bool          valid() const;
   bool          validate();
 
   // Compare nodes.
@@ -54,6 +55,10 @@ struct __attribute__((__packed__)) NodeStruct
   int8_t        getRSSI() const;
 
   void          setRSSI(int8_t rssi);
+
+  bool          markedAsPriorityPeer() const;
+
+  bool          match(const MAC_address& mac) const;
 
 
   // Do not change the order of this data, as it is being sent via P2P UDP.

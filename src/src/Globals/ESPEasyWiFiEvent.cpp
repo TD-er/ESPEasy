@@ -29,6 +29,7 @@ int wifi_reconnects                            = -1; // First connection attempt
 String  last_ssid;
 bool    bssid_changed                     = false;
 bool    channel_changed                   = false;
+bool    espeasy_now_only                  = false;
 
 WiFiDisconnectReason lastDisconnectReason = WIFI_DISCONNECT_REASON_UNSPECIFIED;
 unsigned long lastConnectMoment           = 0;
