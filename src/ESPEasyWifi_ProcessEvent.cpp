@@ -307,6 +307,7 @@ void processGotIP() {
     wifiSetup = false;
     SaveSettings();
   }
+  refreshNodeList();
   logConnectionStatus();
 
   if ((bitRead(wifiStatus, ESPEASY_WIFI_CONNECTED) || WiFi.isConnected()) && hasIPaddr()) {
@@ -346,6 +347,9 @@ void processProbeRequestAPmode() {
   }
 
   // FIXME TD-er: Must create an answer for ESPEasy-now node discovery
+  #ifdef USES_ESPEASY_NOW
+  ESPEasy_now_handler.sendDiscoveryAnnounce();
+  #endif
 
   APModeProbeRequestReceived_list.pop_front();
   processedProbeRequestAPmode = APModeProbeRequestReceived_list.size() == 0;
