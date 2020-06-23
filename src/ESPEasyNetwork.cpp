@@ -1,10 +1,12 @@
 #include "ESPEasyNetwork.h"
+#include "ESPEasy_Log.h"
 #include "ESPEasy_fdwdecl.h"
 #include "ESPEasy-Globals.h"
-#include "ESPEasy_Log.h"
 #include "ESPEasyEth.h"
 #include "src/Helpers/StringConverter.h"
 #include "ESPEasyWifi.h"
+
+#include "src/DataStructs/MAC_address.h"
 
 #ifdef HAS_ETHERNET
 #include "ETH.h"
@@ -117,13 +119,11 @@ String NetworkMacAddress() {
     }
   }
   #endif
+
+  MAC_address net_mac;
+  NetworkMacAddressAsBytes(net_mac.mac);
   
-  uint8_t  mac[]   = { 0, 0, 0, 0, 0, 0 };
-  uint8_t *macread = NetworkMacAddressAsBytes(mac);
-  char     macaddress[20];
-  formatMAC(macread, macaddress);
-  
-  return String(macaddress);
+  return net_mac.toString();
 }
 
 uint8_t * NetworkMacAddressAsBytes(uint8_t* mac) {
@@ -175,9 +175,7 @@ String createRFCCompliantHostname(String oldString) {
 }
 
 String WifiSoftAPmacAddress() {
-    uint8_t  mac[]   = { 0, 0, 0, 0, 0, 0 };
-    uint8_t *macread = WiFi.softAPmacAddress(mac);
-    char     macaddress[20];
-    formatMAC(macread, macaddress);
-    return String(macaddress);
+  MAC_address ap_mac;
+  WiFi.softAPmacAddress(ap_mac.mac);
+  return ap_mac.toString();
 }
