@@ -20,6 +20,8 @@
 #include "../Helpers/PeriodicalActions.h"
 #include "../Helpers/StringConverter.h"
 
+#include "../WiFi/ESPEasyWiFiMesh.h"
+
 #include "ESPEasy_checks.h"
 
 #ifdef ESP32

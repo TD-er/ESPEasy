@@ -10,6 +10,7 @@
 #include "src/Globals/RTC.h"
 #include "src/Globals/MQTT.h"
 #include "src/Helpers/ESPEasy_Storage.h"
+#include "src/Globals/MeshSettings.h"
 #include "src/Helpers/ESPEasy_time_calc.h"
 #include "src/Helpers/StringConverter.h"
 #include "src/Helpers/Scheduler.h"

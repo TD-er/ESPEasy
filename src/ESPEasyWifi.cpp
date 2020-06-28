@@ -11,6 +11,7 @@
 #include "src/Globals/SecuritySettings.h"
 #include "src/Helpers/ESPEasy_time_calc.h"
 #include "src/Helpers/StringConverter.h"
+#include "src/Globals/MeshSettings.h"
 
 
 

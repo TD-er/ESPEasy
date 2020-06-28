@@ -8,6 +8,7 @@
 #include "../Commands/Common.h"
 #include "../Globals/Settings.h"
 #include "../Globals/CPlugins.h"
+#include "../DataStructs/EventValueSource.h"
 
 #include "../Helpers/ESPEasy_Storage.h"
 #include "../Helpers/StringConverter.h"
@@ -29,7 +30,7 @@ String Command_MQTT_Publish(struct EventStruct *event, const char *Line)
   #ifdef USES_WIFI_MESH
   // FIXME TD-er: Not sure whether this should be checked per command,
   //  or maybe a separate check first to see what command can be handled local and what should be forwarded.
-  if (event->Source == VALUE_SOURCE_MESH) {
+  if (event->Source == EventValueSource::Enum::VALUE_SOURCE_MESH) {
     if ((MeshSettings.forceSendViaMesh || !MQTTclient.connected()) && meshActive()) {
       return return_command_forwarded();
     }

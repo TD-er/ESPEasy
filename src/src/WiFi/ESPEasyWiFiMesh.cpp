@@ -7,8 +7,10 @@
 #include <TransmissionOutcome.h>
 
 #include "ESPEasyWiFiMesh.h"
+#include "../Commands/InternalCommands.h"
 #include "../Globals/MeshSettings.h"
 #include "../DataStructs/EventValueSource.h"
+#include "../Helpers/Numerical.h"
 #include "../../ESPEasy_Log.h"
 #include "../../ESPEasy_fdwdecl.h"
 
@@ -119,7 +121,7 @@ bool meshMessageHandler(String& message, FloodingMesh& meshInstance) {
   switch (messageType) {
     case MESH_COMMAND:
     {
-      handled = ExecuteCommand_internal(VALUE_SOURCE_MESH, message.substring(delimiterIndex + 1).c_str());
+      handled = ExecuteCommand_internal(EventValueSource::Enum::VALUE_SOURCE_MESH, message.substring(delimiterIndex + 1).c_str());
     }
     break;
     case MESH_HOSTINFO:

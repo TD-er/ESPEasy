@@ -9,6 +9,7 @@
 #include "../DataStructs/SchedulerTimers.h"
 #include "../DataStructs/TimingStats.h"
 #include "../Globals/EventQueue.h"
+#include "../Globals/MeshSettings.h"
 #include "../Globals/MQTT.h"
 #include "../Globals/SecuritySettings.h"
 #include "../Globals/Services.h"
@@ -248,22 +249,46 @@ void processMQTTdelayQueue() {
 
   if (element == NULL) { return; }
 
-  if (MQTTclient.publish(element->_topic.c_str(), element->_payload.c_str(), element->_retained)) {
-    if (connectionFailures > 0) {
-      --connectionFailures;
-    }
-    MQTTDelayHandler.markProcessed(true);
-  } else {
-    MQTTDelayHandler.markProcessed(false);
-#ifndef BUILD_NO_DEBUG
+  bool sent = false;
 
-    if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
-      String log = F("MQTT : process MQTT queue not published, ");
-      log += MQTTDelayHandler.sendQueue.size();
-      log += F(" items left in queue");
-      addLog(LOG_LEVEL_DEBUG, log);
+  # ifdef USES_WIFI_MESH
+
+  if ((MeshSettings.forceSendViaMesh || !MQTTclient.connected()) && meshActive()) {
+    String message;
+    message.reserve(element->_topic.length() + element->_payload.length() + 32);
+    message += F("publish ");
+    message += '`';
+    message += element->_topic;
+    message += '`';
+    message += ',';
+    message += '`';
+    message += element->_payload;
+    message += '`';
+    sent = sendFloodingMeshBroadcast(MESH_COMMAND, message);
+
+    // FIXME TD-er: Must get some feedback on whether it was successful.
+    MQTTDelayHandler.markProcessed(true);
+  }
+  # endif // ifdef USES_WIFI_MESH
+
+  if (!sent) {
+    if (MQTTclient.publish(element->_topic.c_str(), element->_payload.c_str(), element->_retained)) {
+      if (connectionFailures > 0) {
+        --connectionFailures;
+      }
+      MQTTDelayHandler.markProcessed(true);
+    } else {
+      MQTTDelayHandler.markProcessed(false);
+  #ifndef BUILD_NO_DEBUG
+
+      if (loglevelActiveFor(LOG_LEVEL_DEBUG)) {
+        String log = F("MQTT : process MQTT queue not published, ");
+        log += MQTTDelayHandler.sendQueue.size();
+        log += F(" items left in queue");
+        addLog(LOG_LEVEL_DEBUG, log);
+      }
+  #endif // ifndef BUILD_NO_DEBUG
     }
-#endif // ifndef BUILD_NO_DEBUG
   }
   setIntervalTimerOverride(TIMER_MQTT, 10); // Make sure the MQTT is being processed as soon as possible.
   scheduleNextMQTTdelayQueue();
