@@ -46,6 +46,8 @@ struct __attribute__((__packed__)) NodeStruct
 
   unsigned long getAge() const;
 
+  bool          isExpired() const;
+
   float         getLoad() const;
 
   String        getSummary() const;
