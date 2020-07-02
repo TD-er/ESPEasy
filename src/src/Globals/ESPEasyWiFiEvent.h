@@ -98,6 +98,7 @@ extern unsigned long lastWiFiResetMoment;
 extern unsigned long lastGetIPmoment;
 extern unsigned long lastGetScanMoment;
 extern unsigned long lastConnectedDuration;
+extern unsigned long lastAPmodeStationConnectMoment;
 extern bool intent_to_reboot;
 extern MAC_address lastMacConnectedAPmode;
 extern MAC_address lastMacDisconnectedAPmode;

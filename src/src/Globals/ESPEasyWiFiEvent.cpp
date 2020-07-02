@@ -41,6 +41,7 @@ unsigned long lastWiFiResetMoment         = 0;
 unsigned long lastGetIPmoment             = 0;
 unsigned long lastGetScanMoment           = 0;
 unsigned long lastConnectedDuration       = 0;
+unsigned long lastAPmodeStationConnectMoment = 0;
 bool intent_to_reboot                     = false;
 MAC_address lastMacConnectedAPmode;
 MAC_address lastMacDisconnectedAPmode;
