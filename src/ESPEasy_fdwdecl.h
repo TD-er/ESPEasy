@@ -116,7 +116,7 @@ void callback(char        *c_topic,
 //void MQTTDisconnect();
 //bool MQTTConnect(controllerIndex_t controller_idx);
 bool MQTTCheck(controllerIndex_t controller_idx);
-//bool MQTT_queueFull(controllerIndex_t controller_idx);
+bool MQTT_queueFull(controllerIndex_t controller_idx);
 bool MQTTpublish(controllerIndex_t controller_idx, const char *topic, const char *payload, bool retained);
 #ifdef USES_ESPEASY_NOW
 
@@ -146,6 +146,8 @@ uint16_t getPortFromKey(uint32_t key);
 
 void initRTC();
 boolean saveToRTC();
+
+void sendData(struct EventStruct *event);
 
 bool setControllerEnableStatus(controllerIndex_t controllerIndex, bool enabled);
 bool setTaskEnableStatus(taskIndex_t taskIndex, bool enabled);
