@@ -1,20 +1,21 @@
 #include "ESPEasy_Storage.h"
 
-
 #include "../../ESPEasyWifi.h"
 #include "../../ESPEasy_Log.h"
-#include "../Globals/Cache.h"
+#include "../../_CPlugin_Helper.h"
+
+#include "../DataStructs/StorageLayout.h"
+#include "../DataStructs/TimingStats.h"
+
 #include "../Globals/CRCValues.h"
-#include "../Globals/ResetFactoryDefaultPref.h"
-#include "../Globals/RTC.h"
+#include "../Globals/Cache.h"
+#include "../Globals/ESPEasy_Scheduler.h"
 #include "../Globals/EventQueue.h"
 #include "../Globals/ExtraTaskSettings.h"
 #include "../Globals/Plugins.h"
+#include "../Globals/RTC.h"
+#include "../Globals/ResetFactoryDefaultPref.h"
 #include "../Globals/SecuritySettings.h"
-#include "../Globals/ESPEasy_Scheduler.h"
-
-#include "../DataStructs/TimingStats.h"
-#include "../DataStructs/StorageLayout.h"
 
 #include "../Helpers/ESPEasy_time_calc.h"
 #include "../Helpers/Hardware.h"
@@ -196,8 +197,12 @@ String BuildFixes()
       else {
         clientid  = F("ESPClient_%mac%");
       }
-      safe_strncpy(ControllerSettings.ClientID, clientid, sizeof(ControllerSettings.ClientID));
 
+      clientid = F(CONTROLLER_DEFAULT_CLIENTID);
+      safe_strncpy(ControllerSettings.ClientID, clientid, sizeof(ControllerSettings.ClientID));
+      setControllerUser(controller_idx, ControllerSettings, F(DEFAULT_CONTROLLER_USER));
+      setControllerPass(controller_idx, ControllerSettings, F(DEFAULT_CONTROLLER_PASS));
+     
       ControllerSettings.mqtt_uniqueMQTTclientIdReconnect(Settings.uniqueMQTTclientIdReconnect_unused());
       ControllerSettings.mqtt_retainFlag(Settings.MQTTRetainFlag_unused);
       SaveControllerSettings(controller_idx, ControllerSettings);
