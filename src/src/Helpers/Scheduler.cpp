@@ -1,6 +1,8 @@
 #include "Scheduler.h"
 
 #include "../../ESPEasy_common.h"
+#include "../../ESPEasy_fdwdecl.h"
+#include "../../ESPEasy-Globals.h"
 #include "../../_Plugin_Helper.h"
 
 #include "../ControllerQueue/DelayQueueElements.h"

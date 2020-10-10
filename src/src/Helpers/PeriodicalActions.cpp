@@ -3,6 +3,8 @@
 
 #include "../../ESPEasyWifi.h"
 #include "../../ESPEasy_common.h"
+#include "../../ESPEasy_fdwdecl.h"
+#include "../../ESPEasy-Globals.h"
 #include "../ControllerQueue/DelayQueueElements.h"
 #include "../ControllerQueue/MQTT_queue_element.h"
 #include "../DataStructs/ESPEasy_plugin_functions.h"
@@ -11,6 +13,7 @@
 #include "../ESPEasyCore/ESPEasy_Log.h"
 #include "../ESPEasyCore/ESPEasyRules.h"
 #include "../ESPEasyCore/Serial.h"
+#include "../Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ESPEasy_Scheduler.h"
 #include "../Globals/EventQueue.h"
 #include "../Globals/MQTT.h"

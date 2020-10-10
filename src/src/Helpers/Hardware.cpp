@@ -2,6 +2,7 @@
 
 #include "../ESPEasyCore/ESPEasy_Log.h"
 
+#include "../Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/ExtraTaskSettings.h"
 #include "../Globals/Settings.h"
 #include "../Globals/Statistics.h"
