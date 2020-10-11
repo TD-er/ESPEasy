@@ -4,7 +4,8 @@
 #include "WebServer_AccessControl.h"
 #include "WebServer_HTML_wrappers.h"
 
-#include "../../ESPEasyWifi.h"
+#include "../ESPEasyCore/ESPEasyWifi.h"
+
 
 #ifdef WEBSERVER_NEW_UI
 

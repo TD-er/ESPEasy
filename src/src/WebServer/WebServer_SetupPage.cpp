@@ -11,6 +11,10 @@
 #include "WebServer_Markup_Forms.h"
 #include "WebServer_SysInfoPage.h"
 
+#include "../ESPEasyCore/ESPEasyNetwork.h"
+#include "../ESPEasyCore/ESPEasyWifi.h"
+
+
 #include "../Globals/ESPEasyWiFiEvent.h"
 #include "../Globals/SecuritySettings.h"
 
@@ -18,8 +22,6 @@
 #include "../Helpers/ESPEasy_Storage.h"
 #include "../Helpers/StringConverter.h"
 
-#include "../../ESPEasyWifi.h"
-#include "../../ESPEasyNetwork.h"
 
 // ********************************************************************************
 // Web Interface Setup Wizard
