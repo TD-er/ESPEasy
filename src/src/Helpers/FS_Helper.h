@@ -14,10 +14,9 @@
     #include "spi_flash.h"
   }
   #ifdef CORE_POST_2_6_0
-    extern "C" uint32_t _FS_start;
-    extern "C" uint32_t _FS_end;
-    extern "C" uint32_t _FS_page;
-    extern "C" uint32_t _FS_block;
+    extern "C" {
+      #include <flash_hal.h>
+    }
   #else
     extern "C" uint32_t _SPIFFS_start;
     extern "C" uint32_t _SPIFFS_end;

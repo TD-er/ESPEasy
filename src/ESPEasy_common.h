@@ -132,6 +132,9 @@ using namespace fs;
   #include <LittleFS.h>
   #define ESPEASY_FS LittleFS
 #else 
+  #ifndef USE_SPIFFS
+    #define USE_SPIFFS
+  #endif
   #ifdef ESP32
     #include <SPIFFS.h>
   #endif

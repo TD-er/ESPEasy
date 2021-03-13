@@ -197,7 +197,19 @@ void sw_watchdog_callback(void *arg)
   ++sw_watchdog_callback_count;
 }
 
+#ifdef AUTOFLASHSIZE
+#define FLASH_MAP_OTA_FS_ESPEASY \
+    { \
+        { 0x402fb000, 0x402DB000, 0x402FB000, 0x1000, 0x100, 1024 }, \
+        { 0x403fb000, 0x403c0000, 0x403fb000, 0x1000, 0x100, 2048 }, \
+        { 0x405fb000, 0x40400000, 0x405fa000, 0x2000, 0x100, 4096 }, \
+        { 0x409fb000, 0x40400000, 0x409fa000, 0x2000, 0x100, 8192 }, \
+        { 0x411fb000, 0x40400000, 0x411fa000, 0x2000, 0x100, 16384 }, \
+        { 0x4027b000, 0x40273000, 0x4027b000, 0x1000, 0x100, 512 }, \
+    }
 
+FLASHMAPCONFIG(FLASH_MAP_OTA_FS_ESPEASY)
+#endif
 
 
 /*********************************************************************************************\

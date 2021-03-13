@@ -1278,13 +1278,16 @@ String ClearInFile(SettingsType::Enum settingsType, int index) {
  \*********************************************************************************************/
 int SpiffsSectors()
 {
+  #ifdef AUTOFLASHSIZE
+  return 32;
+  #endif
   #ifndef BUILD_NO_RAM_TRACKER
   checkRAM(F("SpiffsSectors"));
   #endif
   #if defined(ESP8266)
     # ifdef CORE_POST_2_6_0
-  uint32_t _sectorStart = ((uint32_t)&_FS_start - 0x40200000) / SPI_FLASH_SEC_SIZE;
-  uint32_t _sectorEnd   = ((uint32_t)&_FS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
+  uint32_t _sectorStart = ((uint32_t)&FS_start - 0x40200000) / SPI_FLASH_SEC_SIZE;
+  uint32_t _sectorEnd   = ((uint32_t)&FS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
     # else // ifdef CORE_POST_2_6_0
   uint32_t _sectorStart = ((uint32_t)&_SPIFFS_start - 0x40200000) / SPI_FLASH_SEC_SIZE;
   uint32_t _sectorEnd   = ((uint32_t)&_SPIFFS_end - 0x40200000) / SPI_FLASH_SEC_SIZE;
