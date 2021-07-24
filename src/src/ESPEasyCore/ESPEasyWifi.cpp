@@ -599,6 +599,7 @@ void SetWiFiTXpower(float dBm) {
 }
 
 void SetWiFiTXpower(float dBm, float rssi) {
+  return;
   const WiFiMode_t cur_mode = WiFi.getMode();
   if (cur_mode == WIFI_OFF) {
     return;
