@@ -1299,6 +1299,7 @@ bool rn2xx3_handler::setChannelEnabled(unsigned int channel, bool enabled)
 
 bool rn2xx3_handler::set2ndRecvWindow(unsigned int dataRate, uint32_t frequency)
 {
+  if (_otaa) return false;
   String value;
 
   value  = String(dataRate);
