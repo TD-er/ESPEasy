@@ -753,7 +753,7 @@ void parseCompleteNonCommentLine(String& line, const String& event,
 
   String eventTrigger;
 
-  action = EMPTY_STRING;
+  action.clear();
 
   if (!codeBlock) // do not check "on" rules if a block of actions is to be
                   // processed
