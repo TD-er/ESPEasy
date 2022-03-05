@@ -1607,7 +1607,7 @@ void initAnalogWrite()
   #if defined(ESP32)
   for(uint8_t x = 0; x < 16; x++) {
     ledChannelPin[x] = -1;
-    ledChannelFreq[x] = ledcSetup(x, 0, 10); // Clear the channel
+    ledChannelFreq[x] = ledcSetup(x, 1000, 10); // Clear the channel
   }
   #endif
   #ifdef ESP8266
@@ -1665,7 +1665,7 @@ int8_t attachLedChannel(int pin, uint32_t frequency)
     ledChannelFreq[ledChannel] = ledcSetup(ledChannel, ledChannelFreq[ledChannel], 10);
     ledChannelPin[ledChannel] = pin; // store pin nr
     ledcAttachPin(pin, ledChannel);  // attach to this pin
-    pinMode(pin, OUTPUT);
+//    pinMode(pin, OUTPUT);
   }
 
   return ledChannel;
