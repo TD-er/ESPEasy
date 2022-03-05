@@ -1637,12 +1637,12 @@ int8_t attachLedChannel(int pin, uint32_t frequency)
     for (uint8_t x = 0; x < 16; x++) { // find free channel
       if (ledChannelPin[x] == -1)
       {
-        if (static_cast<uint32_t>(ledcReadFreq(x)) == ledChannelFreq[x]) {
+//        if (static_cast<uint32_t>(ledcReadFreq(x)) == ledChannelFreq[x]) {
           // Channel is not used by some other piece of code.
           ledChannel = x;
           mustSetup = true;
           break;
-        }
+//        }
       }
     }
   }
