@@ -176,6 +176,10 @@ float ExtraTaskSettingsStruct::checkAllowedRange(taskVarIndex_t taskVarIndex, co
   return value;
 }
 
+#if FEATURE_PLUGIN_STATS
+// Plugin Stats is now only a single bit, but this may later changed into a combobox with some options.
+// Thus leave 8 bits for the plugin stats options.
+
 bool ExtraTaskSettingsStruct::enabledPluginStats(taskVarIndex_t taskVarIndex) const
 {
   if (!validTaskVarIndex(taskVarIndex)) { return false; }
@@ -196,3 +200,33 @@ bool ExtraTaskSettingsStruct::anyEnabledPluginStats() const
   }
   return false;
 }
+#endif
+
+#if FEATURE_PLUGIN_FILTER
+// Plugin Filter is now only a single bit, but this may later changed into a combobox with some options.
+// Thus leave 8 bits for the plugin filter options.
+// Options probably will be like this:
+// 0 = disabled
+// 1 = Task specific fiter (thus using domain knowledge of the plugin)
+// 2 ... N = generic filters, like decimation, threshold, min/max, etc.
+bool ExtraTaskSettingsStruct::enabledPluginFilter(taskVarIndex_t taskVarIndex) const
+{
+  if (!validTaskVarIndex(taskVarIndex)) { return false; }
+  return bitRead(VariousBits[taskVarIndex], 8);
+}
+
+void ExtraTaskSettingsStruct::enablePluginFilter(taskVarIndex_t taskVarIndex, bool enabled)
+{
+  if (validTaskVarIndex(taskVarIndex)) {
+    bitWrite(VariousBits[taskVarIndex], 8, enabled);
+  }
+}
+
+bool ExtraTaskSettingsStruct::anyEnabledPluginFilter() const
+{
+  for (uint8_t i = 0; i < VARS_PER_TASK; ++i) {
+    if (enabledPluginFilter(i)) return true;
+  }
+  return false;
+}
+#endif

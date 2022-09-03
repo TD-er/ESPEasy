@@ -29,6 +29,11 @@ struct PluginTaskData_base {
   void    clearPluginStats(taskVarIndex_t taskVarIndex);
   #endif // if FEATURE_PLUGIN_STATS
 
+  #if FEATURE_PLUGIN_FILTER
+  // TODO TD-er: Implement init/clear filter
+
+  #endif
+
   // Called right after successful PLUGIN_READ to store task values
   void pushPluginStatsValues(struct EventStruct *event,
                              bool                trackPeaks);
@@ -48,6 +53,12 @@ struct PluginTaskData_base {
 # endif // if FEATURE_CHART_JS
 #endif  // if FEATURE_PLUGIN_STATS
 
+  #if FEATURE_PLUGIN_FILTER
+  // TODO TD-er: Implement webformLoad_show_filter
+
+  #endif
+
+
   // We cannot use dynamic_cast, so we must keep track of the plugin ID to
   // perform checks on the casting.
   // This is also a check to only use these functions and not to insert pointers
@@ -64,6 +75,12 @@ private:
   // Array of pointers to PluginStats. One per task value.
   PluginStats_array *_plugin_stats_array = nullptr;
 #endif // if FEATURE_PLUGIN_STATS
+
+#if FEATURE_PLUGIN_FILTER
+  // TODO TD-er: Add PluginFilter_array, one PluginFilter per task value
+
+#endif
+
 };
 
 #endif // ifndef DATASTRUCTS_PLUGINTASKDATA_BASE_H

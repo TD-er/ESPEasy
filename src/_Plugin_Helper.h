@@ -106,6 +106,7 @@ PluginTaskData_base* getPluginTaskData(taskIndex_t taskIndex);
 bool                 pluginTaskData_initialized(taskIndex_t taskIndex);
 
 String               getPluginCustomArgName(int varNr);
+String               getPluginCustomArgName(const __FlashStringHelper * label, int varNr);
 
 int                  getFormItemIntCustomArgName(int varNr);
 

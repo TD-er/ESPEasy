@@ -331,6 +331,10 @@ bool PluginCallForTask(taskIndex_t taskIndex, uint8_t Function, EventStruct *Tem
             }
           }
           #endif // if FEATURE_PLUGIN_STATS
+          #if FEATURE_PLUGIN_FILTER
+            // TODO TD-er: Add plugin filter like stats_only_data_struct
+
+          #endif
           // Schedule the plugin to be read.
           Scheduler.schedule_task_device_timer_at_init(TempEvent->TaskIndex);
           queueTaskEvent(F("TaskInit"), taskIndex, retval);
@@ -680,6 +684,10 @@ bool PluginCall(uint8_t Function, struct EventStruct *event, String& str)
             }
           }
           #endif // if FEATURE_PLUGIN_STATS
+          #if FEATURE_PLUGIN_FILTER
+            // TODO TD-er: Add plugin filter like stats_only_data_struct
+
+          #endif
           // Schedule the plugin to be read.
           Scheduler.schedule_task_device_timer_at_init(TempEvent.TaskIndex);
           queueTaskEvent(F("TaskInit"), event->TaskIndex, retval);

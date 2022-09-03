@@ -14,6 +14,20 @@ class IPAddress;
 
 // -V::569
 
+String concat(const __FlashStringHelper * str, unsigned int val);
+String concat(const String& str, unsigned int val);
+
+String concat(const __FlashStringHelper * str, int val);
+String concat(const String& str, int val);
+
+String concat(const __FlashStringHelper * str, const float& val, unsigned int decimalPlaces = 2);
+String concat(const String& str, const float& val, unsigned int decimalPlaces = 2);
+
+String concat(const __FlashStringHelper * str, const double& val, unsigned int decimalPlaces = 2);
+String concat(const String& str, const double& val, unsigned int decimalPlaces = 2);
+
+
+
 /********************************************************************************************\
    Convert a char string to integer
  \*********************************************************************************************/

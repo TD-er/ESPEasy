@@ -2212,6 +2212,10 @@ To create/register a plugin, you have to :
 #define FEATURE_PACKED_RAW_DATA               0
 #endif
 
+#ifndef FEATURE_PLUGIN_FILTER
+#define FEATURE_PLUGIN_FILTER                 0
+#endif
+
 #ifndef FEATURE_PLUGIN_STATS                  
 #define FEATURE_PLUGIN_STATS                  0
 #endif
