@@ -27,67 +27,6 @@
 
 // -V::569
 
-String concat(const __FlashStringHelper * str, unsigned int val)
-{
-  String res;
-  res += str;
-  res += val;
-  return res;
-}
-
-String concat(const String& str, unsigned int val)
-{
-  String res(str);
-  res += val;
-  return res;
-}
-
-String concat(const __FlashStringHelper * str, int val)
-{
-  String res;
-  res += str;
-  res += val;
-  return res;
-}
-
-String concat(const String& str, int val)
-{
-  String res(str);
-  res += val;
-  return res;
-}
-
-String concat(const __FlashStringHelper * str, const float& val, unsigned int decimalPlaces)
-{
-  String res;
-  res += str;
-  res += toString(val, decimalPlaces);
-  return res;
-}
-
-String concat(const String& str, const float& val, unsigned int decimalPlaces)
-{
-  String res(str);
-  res += toString(val, decimalPlaces);
-  return res;
-}
-
-String concat(const __FlashStringHelper * str, const double& val, unsigned int decimalPlaces)
-{
-  String res;
-  res += str;
-  res += toString(val, decimalPlaces);
-  return res;
-}
-
-String concat(const String& str, const double& val, unsigned int decimalPlaces)
-{
-  String res(str);
-  res += toString(val, decimalPlaces);
-  return res;
-}
-
-
 
 /********************************************************************************************\
    Convert a char string to integer

@@ -41,6 +41,7 @@
 #include "src/Helpers/PortStatus.h"
 #include "src/Helpers/StringConverter.h"
 #include "src/Helpers/StringGenerator_GPIO.h"
+#include "src/Helpers/StringGenerator_Plugin.h"
 #include "src/Helpers/StringParser.h"
 #include "src/Helpers/_Plugin_SensorTypeHelper.h"
 #include "src/Helpers/_Plugin_Helper_serial.h"

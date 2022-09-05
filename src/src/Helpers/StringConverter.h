@@ -14,18 +14,23 @@ class IPAddress;
 
 // -V::569
 
-String concat(const __FlashStringHelper * str, unsigned int val);
-String concat(const String& str, unsigned int val);
+/********************************************************************************************\
+   Concatenate using code which results in the smallest compiled code
+ \*********************************************************************************************/
 
-String concat(const __FlashStringHelper * str, int val);
-String concat(const String& str, int val);
+template <typename T>
+String concat(const __FlashStringHelper * str, const T &val) {
+  String res(str);
+  res.concat(val);
+  return res;
+}
 
-String concat(const __FlashStringHelper * str, const float& val, unsigned int decimalPlaces = 2);
-String concat(const String& str, const float& val, unsigned int decimalPlaces = 2);
-
-String concat(const __FlashStringHelper * str, const double& val, unsigned int decimalPlaces = 2);
-String concat(const String& str, const double& val, unsigned int decimalPlaces = 2);
-
+template <typename T>
+String concat(const String& str, const T &val) {
+  String res(str);
+  res.concat(val);
+  return res;
+}
 
 
 /********************************************************************************************\
