@@ -121,8 +121,8 @@ void pluginWebformShowValue(taskIndex_t   taskIndex,
   }
 
   pluginWebformShowValue(
-    label, concat(F("valuename_"), taskIndex) + '_' + varNr,
-    value, concat(F("value_"), taskIndex) + '_' + varNr,
+    label, concat(F("valuename_"), static_cast<int>(taskIndex)) + '_' + varNr,
+    value, concat(F("value_"), static_cast<int>(taskIndex)) + '_' + varNr,
     addTrailingBreak);
 }
 
@@ -158,7 +158,7 @@ bool pluginOptionalTaskIndexArgumentMatch(taskIndex_t taskIndex, const String& s
 }
 
 bool pluginWebformShowGPIOdescription(taskIndex_t taskIndex,
-                                      const String& newline,
+                                      const __FlashStringHelper * newline,
                                       String& description)
 {
   struct EventStruct TempEvent(taskIndex);

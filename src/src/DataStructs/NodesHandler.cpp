@@ -60,7 +60,8 @@ bool NodesHandler::addNode(const NodeStruct& node)
   }
   {
     _nodes_mutex.lock();
-    _nodes[node.unit]             = node;
+    _nodes[node.unit] = node;
+    _ntp_candidate.set(node);
     _nodes[node.unit].lastUpdated = millis();
     if (node.getRSSI() >= 0 && rssi < 0) {
       _nodes[node.unit].setRSSI(rssi);
@@ -74,6 +75,19 @@ bool NodesHandler::addNode(const NodeStruct& node)
     }
     _nodes_mutex.unlock();
   }
+
+  // Check whether the current time source is considered "worse" than received from p2p node.
+  if (!node_time.systemTimePresent() || 
+      node_time.timeSource > timeSource_t::ESPEASY_p2p_UDP ||
+      ((node_time.timeSource == timeSource_t::ESPEASY_p2p_UDP) &&
+       (timePassedSince(node_time.lastSyncTime_ms) > EXT_TIME_SOURCE_MIN_UPDATE_INTERVAL_MSEC) )) {
+    double unixTime;
+    uint8_t unit;
+    if (_ntp_candidate.getUnixTime(unixTime, unit)) {
+      node_time.setExternalTimeSource(unixTime, timeSource_t::ESPEASY_p2p_UDP, unit);
+    }
+  }
+
   return isNewNode;
 }
 
@@ -331,21 +345,25 @@ void NodesHandler::updateThisNode() {
   WiFi.macAddress(thisNode.sta_mac);
   WiFi.softAPmacAddress(thisNode.ap_mac);
   {
-    bool addIP = NetworkConnected();
+    const bool addIP = NetworkConnected();
     #ifdef USES_ESPEASY_NOW
     if (use_EspEasy_now) {
       thisNode.useAP_ESPEasyNow = 1;
     }
     #endif
     if (addIP) {
-      IPAddress localIP = NetworkLocalIP();
+      const IPAddress localIP = NetworkLocalIP();
 
       for (uint8_t i = 0; i < 4; ++i) {
         thisNode.ip[i] = localIP[i];
       }
     }
   }
+  #ifdef USES_ESPEASY_NOW
+  thisNode.channel = getESPEasyNOW_channel();
+  #else
   thisNode.channel = WiFiEventData.usedChannel;
+  #endif
   if (thisNode.channel == 0) {
     thisNode.channel = WiFi.channel();
   }
@@ -356,7 +374,7 @@ void NodesHandler::updateThisNode() {
   thisNode.nodeType = NODE_TYPE_ID;
 
   thisNode.webgui_portnumber = Settings.WebserverPort;
-  int load_int = getCPUload() * 2.55;
+  const int load_int = getCPUload() * 2.55;
 
   if (load_int > 255) {
     thisNode.load = 255;
@@ -371,9 +389,15 @@ void NodesHandler::updateThisNode() {
       break;
     default:
     {
-      thisNode.lastUpdated = timePassedSince(node_time.lastSyncTime);
+      thisNode.lastUpdated = timePassedSince(node_time.lastSyncTime_ms);
       break;
     }
+  }
+  if (node_time.systemTimePresent()) {
+    // NodeStruct is a packed struct, so we cannot directly use its members as a reference.
+    uint32_t unix_time_frac = 0;
+    thisNode.unix_time_sec = node_time.getUnixTime(unix_time_frac);
+    thisNode.unix_time_frac = unix_time_frac;
   }
   #ifdef USES_ESPEASY_NOW
   if (Settings.UseESPEasyNow()) {
@@ -444,6 +468,7 @@ void NodesHandler::updateThisNode() {
 }
 
 const NodeStruct * NodesHandler::getThisNode() {
+  node_time.now();
   updateThisNode();
   MAC_address this_mac;
   WiFi.macAddress(this_mac.mac);
@@ -553,7 +578,7 @@ uint8_t NodesHandler::getESPEasyNOW_channel() const
       return preferred->channel;
     }
   }
-  return 0;
+  return WiFiEventData.usedChannel;
 }
 #endif
 

@@ -17,6 +17,7 @@
 
 #include "../DataStructs/RTCStruct.h"
 
+#include "../ESPEasyCore/ESPEasyEth.h"
 #include "../ESPEasyCore/ESPEasyNetwork.h"
 #include "../ESPEasyCore/ESPEasyWifi.h"
 
@@ -33,10 +34,12 @@
 #include "../Helpers/Hardware.h"
 #include "../Helpers/Memory.h"
 #include "../Helpers/Misc.h"
+#include "../Helpers/Networking.h"
 #include "../Helpers/OTA.h"
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringGenerator_GPIO.h"
 #include "../Helpers/StringGenerator_System.h"
+#include "../Helpers/StringProvider.h"
 
 #include "../Static/WebStaticData.h"
 
@@ -221,7 +224,7 @@ void handle_sysinfo() {
   navMenuIndex = MENU_INDEX_TOOLS;
   html_reset_copyTextCounter();
   TXBuffer.startStream();
-  sendHeadandTail_stdtemplate();
+  sendHeadandTail_stdtemplate(_HEAD);
 
   addHtml(printWebString);
   addHtml(F("<form>"));
@@ -238,7 +241,7 @@ void handle_sysinfo() {
   addHtml(F("<TH>")); // Needed to get the copy button on the same header line.
   addCopyButton(F("copyText"), F("\\n"), F("Copy info to clipboard"));
 
-  TXBuffer += githublogo;
+  TXBuffer.addFlashString((PGM_P)FPSTR(githublogo));
   serve_JS(JSfiles_e::GitHubClipboard);
 
   # else // ifdef WEBSERVER_GITHUB_COPY
@@ -277,7 +280,7 @@ void handle_sysinfo() {
 
   html_end_table();
   html_end_form();
-  sendHeadandTail_stdtemplate(true);
+  sendHeadandTail_stdtemplate(_TAIL);
   TXBuffer.endStream();
 }
 
@@ -287,9 +290,12 @@ void handle_sysinfo_basicInfo() {
   if (node_time.systemTimePresent())
   {
     addRowLabelValue(LabelType::LOCAL_TIME);
+    if (Settings.ExtTimeSource() != ExtTimeSource_e::None) {
+      addRowLabelValue(LabelType::EXT_RTC_UTC_TIME);
+    }
     addRowLabelValue(LabelType::TIME_SOURCE);
     addRowLabelValue(LabelType::TIME_WANDER);
-    addUnit(F("msec/sec"));
+    addUnit(F("ppm"));
   }
 
   addRowLabel(LabelType::UPTIME);

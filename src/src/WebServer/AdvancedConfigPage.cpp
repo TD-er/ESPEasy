@@ -15,6 +15,7 @@
 #include "../Globals/TimeZone.h"
 
 #include "../Helpers/ESPEasy_Storage.h"
+#include "../Helpers/ESPEasy_time.h"
 #include "../Helpers/StringConverter.h"
 
 void setLogLevelFor(uint8_t destination, LabelType::Enum label) {
@@ -32,7 +33,7 @@ void handle_advanced() {
   if (!isLoggedIn()) { return; }
   navMenuIndex = MENU_INDEX_TOOLS;
   TXBuffer.startStream();
-  sendHeadandTail_stdtemplate();
+  sendHeadandTail_stdtemplate(_HEAD);
 
   if (!webArg(F("edit")).isEmpty())
   {
@@ -122,7 +123,7 @@ void handle_advanced() {
     Settings.AllowOTAUnlimited(isFormItemChecked(LabelType::ALLOW_OTA_UNLIMITED));
 #endif // NO_HTTP_UPDATER
 #if FEATURE_AUTO_DARK_MODE
-    Settings.EnableAutomaticDarkMode(isFormItemChecked(LabelType::ENABLE_AUTO_DARK_MODE));
+    Settings.setCssMode(getFormItemInt(getInternalLabel(LabelType::ENABLE_AUTO_DARK_MODE)));
 #endif // FEATURE_AUTO_DARK_MODE
 
     addHtmlError(SaveSettings());
@@ -168,6 +169,9 @@ void handle_advanced() {
   addFormCheckBox(F("Use NTP"), F("usentp"), Settings.UseNTP());
   addFormTextBox(F("NTP Hostname"), F("ntphost"), Settings.NTPHost, 63);
   addFormExtTimeSourceSelect(F("External Time Source"), F("exttimesource"), Settings.ExtTimeSource());
+  if (Settings.ExtTimeSource() != ExtTimeSource_e::None) {
+    addFormNote(concat(getLabel(LabelType::EXT_RTC_UTC_TIME), F(": ")) + getValue(LabelType::EXT_RTC_UTC_TIME));
+  }
 
   addFormSubHeader(F("DST Settings"));
   addFormDstSelect(true,  Settings.DST_Start);
@@ -252,7 +256,18 @@ void handle_advanced() {
   addFormNote(F("Requires reboot to activate"));
   # endif // ifndef NO_HTTP_UPDATER
   #if FEATURE_AUTO_DARK_MODE
-  addFormCheckBox(LabelType::ENABLE_AUTO_DARK_MODE, Settings.EnableAutomaticDarkMode());
+  const __FlashStringHelper * cssModeNames[] = {
+    F("Auto"),
+    F("Light"),
+    F("Dark"),
+  };
+  const int cssModeOptions[] = { 0, 1, 2};
+    addFormSelector(getLabel(LabelType::ENABLE_AUTO_DARK_MODE),
+                    getInternalLabel(LabelType::ENABLE_AUTO_DARK_MODE),
+                    sizeof(cssModeOptions) / sizeof(int),
+                    cssModeNames,
+                    cssModeOptions,
+                    Settings.getCssMode());
   #endif // FEATURE_AUTO_DARK_MODE
 
   #ifdef ESP8266
@@ -321,7 +336,7 @@ void handle_advanced() {
   addHtml(F("<input type='hidden' name='edit' value='1'>"));
   html_end_table();
   html_end_form();
-  sendHeadandTail_stdtemplate(true);
+  sendHeadandTail_stdtemplate(_TAIL);
   TXBuffer.endStream();
 }
 

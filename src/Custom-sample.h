@@ -92,6 +92,7 @@
 #define DEFAULT_USE_EXTD_CONTROLLER_CREDENTIALS   false                     // true: Allow longer user credentials for controllers
 
 #define DEFAULT_PORT        8080                                            // Enter your Server port value
+#define DEFAULT_CONTROLLER_TIMEOUT  100                                     // Default timeout in msec
 
 #define DEFAULT_PROTOCOL    0                                               // Protocol used for controller communications
                                                                             //   0 = Stand-alone (no controller set)
@@ -105,8 +106,18 @@
                                                                             //   8 = Generic HTTP
                                                                             //   9 = FHEM HTTP
 
+#ifdef ESP8266
 #define DEFAULT_PIN_I2C_SDA                     4
+#endif
+#ifdef ESP32
+#define DEFAULT_PIN_I2C_SDA                     -1                // Undefined
+#endif
+#ifdef ESP8266
 #define DEFAULT_PIN_I2C_SCL                     5
+#endif
+#ifdef ESP32
+#define DEFAULT_PIN_I2C_SCL                     -1                // Undefined
+#endif
 #define DEFAULT_I2C_CLOCK_SPEED                 400000            // Use 100 kHz if working with old I2C chips
 #define FEATURE_I2C_DEVICE_SCAN                 1
 
@@ -204,6 +215,7 @@
 // #define PLUGIN_USES_ADAFRUITGFX // Used by Display plugins using Adafruit GFX library
 // #define ADAGFX_ARGUMENT_VALIDATION  0 // Disable argument validation in AdafruitGFX_helper
 // #define ADAGFX_SUPPORT_7COLOR  0 // Disable the support of 7-color eInk displays by AdafruitGFX_helper
+// #define FEATURE_SEND_TO_HTTP 1 // Enable availability of the SendToHTTP command
 
 
 #if FEATURE_CUSTOM_PROVISIONING
@@ -441,6 +453,7 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 // #define USES_P115   // MAX1704x
 // #define USES_P116   // ST77xx
 // #define USES_P117   // SCD30
+// #define USES_P118   // Itho
 // #define USES_P119   // ITG3205 Gyro
 // #define USES_P120   // ADXL345 I2C Acceleration / Gravity
 // #define USES_P124   // I2C MultiRelay
@@ -451,6 +464,10 @@ static const char DATA_ESPEASY_DEFAULT_MIN_CSS[] PROGMEM = {
 // #define USES_P131   // NeoMatrix
 // #define USES_P132   // INA3221
 // #define USES_P133   // LTR390 UV
+// #define USES_P134   // A02YYUW
+// #define USES_P135   // SCD4x
+// #define P135_FEATURE_RESET_COMMANDS  1 // Enable/Disable quite spacious (~950 bytes) 'selftest' and 'factoryreset' subcommands
+// #define USES_P141   // PCD8544 Nokia 5110 LCD
 
 // #define USES_P128   // NeoPixelBusFX
 // #define P128_USES_GRB  // Default

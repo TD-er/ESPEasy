@@ -12,7 +12,7 @@
 #include "../Static/WebStaticData.h"
 
 #include "../WebServer/HTML_wrappers.h"
-
+#include "../WebServer/LoadFromFS.h"
 
 #include "../../ESPEasy_common.h"
 
@@ -301,7 +301,6 @@ void WebTemplateParser::getWebPageTemplateVar(const String& varName)
 #endif // if !FEATURE_NOTIFIER
 
       addHtml(F("<a "));
-
       addHtmlAttribute(F("class"), (i == navMenuIndex) ? F("menu active") : F("menu"));
       addHtmlAttribute(F("href"),  getGpMenuURL(i));
       addHtml('>');
@@ -325,16 +324,39 @@ void WebTemplateParser::getWebPageTemplateVar(const String& varName)
   else if (varName.equals(F("css")))
   {
     serve_favicon();
-    serve_CSS();
+    if (MENU_INDEX_SETUP == navMenuIndex) {
+      // Serve embedded CSS
+      serve_CSS_inline();
+    } else {
+      serve_CSS(CSSfiles_e::ESPEasy_default);
+    }
+    #if FEATURE_RULES_EASY_COLOR_CODE
+    if (MENU_INDEX_RULES == navMenuIndex ||
+        MENU_INDEX_CUSTOM_PAGE == navMenuIndex) {
+      serve_CSS(CSSfiles_e::EasyColorCode_codemirror);
+    }
+    #endif
   }
 
 
   else if (varName.equals(F("js")))
   {
     html_add_JQuery_script();
+
     #if FEATURE_CHART_JS
     html_add_ChartJS_script();
     #endif // if FEATURE_CHART_JS
+
+    #if FEATURE_RULES_EASY_COLOR_CODE
+    if (MENU_INDEX_RULES == navMenuIndex ||
+        MENU_INDEX_CUSTOM_PAGE == navMenuIndex) {
+      html_add_Easy_color_code_script();
+    }
+    #endif
+    if (MENU_INDEX_RULES == navMenuIndex) {
+      serve_JS(JSfiles_e::SaveRulesFile);
+    }
+    
     html_add_autosubmit_form();
     serve_JS(JSfiles_e::Toasting);
   }
