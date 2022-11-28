@@ -24,6 +24,10 @@
 
 #ifdef ESP32
 #include <WiFiGeneric.h>
+#include <esp_netif.h>
+#include <lwip/dhcp6.h>
+
+esp_netif_t* get_esp_interface_netif(esp_interface_t interface);
 #endif
 
 // FIXME TD-er: Cleanup of WiFi code
@@ -372,6 +376,9 @@ void WiFiConnectRelaxed() {
       if (!WiFiEventData.processedGotIP) {
         log += F(" gotIP");
       }
+      if (!WiFiEventData.processedGotIPv6) {
+        log += F(" IPv6");
+      }
       if (!WiFiEventData.processedDHCPTimeout) {
         log += F(" DHCP_t/o");
       }
@@ -502,6 +509,7 @@ bool prepareWiFi() {
   }
   WiFiEventData.warnedNoValidWiFiSettings = false;
   setSTA(true);
+  WiFi.enableIpV6();
 
   #if defined(ESP8266)
   wifi_station_set_hostname(NetworkCreateRFCCompliantHostname().c_str());
@@ -905,6 +913,9 @@ bool WiFiScanAllowed() {
       }
       if (!WiFiEventData.processedGotIP) {
         log += F(" gotIP");
+      }
+      if (!WiFiEventData.processedGotIPv6) {
+        log += F(" IPv6");
       }
       if (!WiFiEventData.processedDHCPTimeout) {
         log += F(" DHCP_t/o");
@@ -1313,6 +1324,9 @@ void setWifiMode(WiFiMode_t new_mode) {
     SetWiFiTXpower();
 #endif
     if (WifiIsSTA(new_mode)) {
+      WiFi.enableIpV6();
+      // FIXME TD-er: Must still enable dhcp6 stateless ????
+//      dhcp6_enable_stateless(get_esp_interface_netif(ESP_IF_WIFI_STA));
       if (WiFi.getAutoConnect()) {
         WiFi.setAutoConnect(false); 
       }

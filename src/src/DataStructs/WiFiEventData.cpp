@@ -45,7 +45,7 @@ bool WiFiEventData_t::WiFiConnectAllowed() const {
 }
 
 bool WiFiEventData_t::unprocessedWifiEvents() const {
-  if (processedConnect && processedDisconnect && processedGotIP && processedDHCPTimeout)
+  if (processedConnect && processedDisconnect && processedGotIP && processedDHCPTimeout && processedGotIPv6)
   {
     return false;
   }
@@ -96,6 +96,7 @@ void WiFiEventData_t::clear_processed_flags() {
   processedConnect          = true;
   processedDisconnect       = true;
   processedGotIP            = true;
+  processedGotIPv6          = true;
   processedDHCPTimeout      = true;
   processedConnectAPmode    = true;
   processedDisconnectAPmode = true;

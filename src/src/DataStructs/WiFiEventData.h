@@ -108,6 +108,7 @@ struct WiFiEventData_t {
   bool processedConnect          = true;
   bool processedDisconnect       = true;
   bool processedGotIP            = true;
+  bool processedGotIPv6          = true;
   bool processedDHCPTimeout      = true;
   bool processedConnectAPmode    = true;
   bool processedDisconnectAPmode = true;

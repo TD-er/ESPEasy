@@ -132,6 +132,8 @@ void WiFiEvent(WiFiEvent_t event, arduino_event_info_t info) {
       ssid_copy[32] = 0; // Potentially add 0-termination if none present earlier
       WiFiEventData.markConnected((const char*) ssid_copy, info.connected.bssid, info.connected.channel);
       #endif
+      //enable sta ipv6 here
+      WiFi.enableIpV6();
       break;
     }
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -149,6 +151,9 @@ void WiFiEvent(WiFiEvent_t event, arduino_event_info_t info) {
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
       ignoreDisconnectEvent = false;
       WiFiEventData.markGotIP();
+      break;
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
+      WiFiEventData.processedGotIPv6 = false;
       break;
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
       #if ESP_IDF_VERSION_MAJOR > 3

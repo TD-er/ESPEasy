@@ -37,6 +37,15 @@
 // #include "../Helpers/Scheduler.h"
 
 
+#ifdef ESP32
+#include <WiFiGeneric.h>
+#include <esp_netif.h>
+#include <lwip/dhcp6.h>
+
+esp_netif_t* get_esp_interface_netif(esp_interface_t interface);
+#endif
+
+
 // ********************************************************************************
 // Called from the loop() to make sure events are processed as soon as possible.
 // These functions are called from Setup() or Loop() and thus may call delay() or yield()
@@ -88,6 +97,15 @@ void handle_unprocessedNetworkEvents()
   }
 
   if (active_network_medium == NetworkMedium_t::WIFI) {
+    if (!WiFiEventData.processedGotIPv6) {
+      addLog(LOG_LEVEL_INFO, concat(F("WIFI : Got Local IPv6: "), WiFi.localIPv6().toString()));
+      esp_ip6_addr_t addr;
+      esp_netif_get_ip6_global(get_esp_interface_netif(ESP_IF_WIFI_STA), &addr);
+
+      addLog(LOG_LEVEL_INFO, concat(F("WIFI : Got Global IPv6: "), IPv6Address(addr.addr).toString()));
+      WiFiEventData.processedGotIPv6 = true;
+    }
+
     if ((!WiFiEventData.WiFiServicesInitialized()) || WiFiEventData.unprocessedWifiEvents()) {
       // WiFi connection is not yet available, so introduce some extra delays to
       // help the background tasks managing wifi connections
@@ -388,6 +406,8 @@ void processGotIP() {
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log = concat(F("WIFI : "), useStaticIP() ? F("Static IP: ") : F("DHCP IP: "));
     log += formatIP(ip);
+    log += ' ';
+    log += WiFi.localIPv6().toString();
     log += ' ';
     log += wrap_braces(NetworkGetHostname());
     log += F(" GW: ");
