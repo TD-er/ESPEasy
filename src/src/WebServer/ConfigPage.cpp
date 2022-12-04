@@ -194,7 +194,7 @@ void handle_config() {
   addFormSubHeader(F("Client IP filtering"));
   {
     IPAddress low, high;
-    getIPallowedRange(low, high);
+    getIPallowedRange(low, high, false); // FIXME TD-er: Must also report this for IPv6
     uint8_t iplow[4];
     uint8_t iphigh[4];
 

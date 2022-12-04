@@ -18,7 +18,7 @@ boolean ipInRange(const IPAddress& ip, const IPAddress& low, const IPAddress& hi
 
 String describeAllowedIPrange();
 
-bool getIPallowedRange(IPAddress& low, IPAddress& high);
+bool getIPallowedRange(IPAddress& low, IPAddress& high, bool IPv4_type = false);
 
 bool clientIPinSubnet();
 

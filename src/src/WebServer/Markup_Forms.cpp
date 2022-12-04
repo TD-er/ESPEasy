@@ -343,7 +343,7 @@ bool getFormPassword(const String& id, String& password)
 // ********************************************************************************
 void addFormIPBox(const __FlashStringHelper *label,
                   const __FlashStringHelper *id,
-                  const uint8_t ip[4])
+                  const uint8_t ip[4]) // FIXME TD-er:  IPv6 compatibility
 {
   addFormIPBox(String(label), String(id), ip);
 }

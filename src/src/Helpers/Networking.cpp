@@ -868,7 +868,7 @@ void SSDP_update() {
 // ********************************************************************************
 // Return subnet range of WiFi.
 // ********************************************************************************
-bool getSubnetRange(IPAddress& low, IPAddress& high)
+bool getSubnetRange(IPAddress& low, IPAddress& high, bool IPv4_type)
 {
   if (!WiFiEventData.WiFiGotIP()) {
     return false;
@@ -1121,6 +1121,14 @@ void sendGratuitousARP() {
   }
   STOP_TIMER(GRAT_ARP_STATS);
 #endif // ifdef SUPPORT_ARP
+}
+
+// add an IPv6 link-local address to all netif
+void CreateLinkLocalIPv6()
+{
+  for (esp_netif_t * nt = esp_netif_next(NULL); nt != NULL; nt = esp_netif_next(nt)) {
+    esp_netif_create_ip6_linklocal(nt);
+  }
 }
 
 bool splitHostPortString(const String& hostPortString, String& host, uint16_t& port) {

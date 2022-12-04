@@ -38,7 +38,7 @@ String describeAllowedIPrange() {
     default:
     {
       IPAddress low, high;
-      getIPallowedRange(low, high);
+      getIPallowedRange(low, high, false); // FIXME TD-er: Must also report this for IPv6
       reply +=  formatIP(low);
       reply +=  F(" - ");
       reply +=  formatIP(high);
@@ -47,7 +47,7 @@ String describeAllowedIPrange() {
   return reply;
 }
 
-bool getIPallowedRange(IPAddress& low, IPAddress& high)
+bool getIPallowedRange(IPAddress& low, IPAddress& high, bool IPv4_type)
 {
   switch (SecuritySettings.IPblockLevel) {
     case LOCAL_SUBNET_ALLOWED:
@@ -56,23 +56,26 @@ bool getIPallowedRange(IPAddress& low, IPAddress& high)
         // WiFi is active as accesspoint, do not check.
         return false;
       }
-      return getSubnetRange(low, high);
+      return getSubnetRange(low, high, IPv4_type);
     case ONLY_IP_RANGE_ALLOWED:
+      if (!IPv4_type) return false;
       low  = SecuritySettings.AllowedIPrangeLow;
       high = SecuritySettings.AllowedIPrangeHigh;
       break;
     default:
       low  = IPAddress(0, 0, 0, 0);
       high = IPAddress(255, 255, 255, 255);
-      return false;
+      break;
   }
-  return true;
+  return false;
 }
 
 bool clientIPinSubnet() {
   IPAddress low, high;
 
-  if (!getSubnetRange(low, high)) {
+  IPAddress remoteIP = web_server.client().remoteIP();
+
+  if (!getSubnetRange(low, high, remoteIP.type() == IPv4)) {
     // Could not determine subnet.
     return false;
   }
@@ -81,15 +84,16 @@ bool clientIPinSubnet() {
 
 boolean clientIPallowed()
 {
+  IPAddress remoteIP = web_server.client().remoteIP();
+
   // TD-er Must implement "safe time after boot"
   IPAddress low, high;
 
-  if (!getIPallowedRange(low, high))
+  if (!getIPallowedRange(low, high, remoteIP.type() == IPv4))
   {
     // No subnet range determined, cannot filter on IP
     return true;
   }
-  const IPAddress remoteIP = web_server.client().remoteIP();
 
   if (ipInRange(remoteIP, low, high)) {
     return true;

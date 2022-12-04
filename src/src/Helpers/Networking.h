@@ -128,7 +128,7 @@ void SSDP_update();
 // ********************************************************************************
 // Return subnet range of WiFi.
 // ********************************************************************************
-bool getSubnetRange(IPAddress& low, IPAddress& high);
+bool getSubnetRange(IPAddress& low, IPAddress& high, bool IPv4_type = true);
 
 // ********************************************************************************
 // Functions to test and handle network/client connectivity.
@@ -163,6 +163,9 @@ bool hostReachable(const String& hostname);
 bool beginWiFiUDP_randomPort(WiFiUDP& udp);
 
 void sendGratuitousARP();
+
+// add an IPv6 link-local address to all netif
+void CreateLinkLocalIPv6();
 
 
 bool splitHostPortString(const String& hostPortString, String& host, uint16_t& port);
