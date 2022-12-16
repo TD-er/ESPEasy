@@ -2596,5 +2596,12 @@ To create/register a plugin, you have to :
   #endif
 #endif
 
-
+#ifndef FEATURE_IPV6
+  #ifdef ESP8266
+    // FIXME TD-er: IPv6 is supported for ESP8266, but not yet tested with ESPEasy
+    #define FEATURE_IPV6 0
+  #endif
+  #ifdef ESP32
+    #define FEATURE_IPV6 1
+  #endif
 #endif // CUSTOMBUILD_DEFINE_PLUGIN_SETS_H

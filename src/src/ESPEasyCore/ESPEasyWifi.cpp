@@ -376,9 +376,11 @@ void WiFiConnectRelaxed() {
       if (!WiFiEventData.processedGotIP) {
         log += F(" gotIP");
       }
+#if FEATURE_IPV6
       if (!WiFiEventData.processedGotIPv6) {
         log += F(" IPv6");
       }
+#endif
       if (!WiFiEventData.processedDHCPTimeout) {
         log += F(" DHCP_t/o");
       }
@@ -922,9 +924,11 @@ bool WiFiScanAllowed() {
       if (!WiFiEventData.processedGotIP) {
         log += F(" gotIP");
       }
+#if FEATURE_IPV6
       if (!WiFiEventData.processedGotIPv6) {
         log += F(" IPv6");
       }
+#endif
       if (!WiFiEventData.processedDHCPTimeout) {
         log += F(" DHCP_t/o");
       }

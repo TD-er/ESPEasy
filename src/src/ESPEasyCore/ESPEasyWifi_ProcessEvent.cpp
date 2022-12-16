@@ -97,6 +97,7 @@ void handle_unprocessedNetworkEvents()
   }
 
   if (active_network_medium == NetworkMedium_t::WIFI) {
+#if FEATURE_IPV6
     if (!WiFiEventData.processedGotIPv6) {
       addLog(LOG_LEVEL_INFO, concat(F("WIFI : Got Local IPv6: "), WiFi.localIPv6().toString()));
       esp_ip6_addr_t addr;
@@ -105,6 +106,7 @@ void handle_unprocessedNetworkEvents()
       addLog(LOG_LEVEL_INFO, concat(F("WIFI : Got Global IPv6: "), IPv6Address(addr.addr).toString()));
       WiFiEventData.processedGotIPv6 = true;
     }
+#endif
 
     if ((!WiFiEventData.WiFiServicesInitialized()) || WiFiEventData.unprocessedWifiEvents()) {
       // WiFi connection is not yet available, so introduce some extra delays to
@@ -409,8 +411,10 @@ void processGotIP() {
   if (loglevelActiveFor(LOG_LEVEL_INFO)) {
     String log = concat(F("WIFI : "), useStaticIP() ? F("Static IP: ") : F("DHCP IP: "));
     log += formatIP(ip);
+#if FEATURE_IPV6
     log += ' ';
     log += WiFi.localIPv6().toString();
+#endif
     log += ' ';
     log += wrap_braces(NetworkGetHostname());
     log += F(" GW: ");

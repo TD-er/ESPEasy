@@ -129,7 +129,9 @@ const __FlashStringHelper * getLabel(LabelType::Enum label) {
     case LabelType::IP_ADDRESS:             return F("IP Address");
     case LabelType::IP_SUBNET:              return F("IP Subnet");
     case LabelType::IP_ADDRESS_SUBNET:      return F("IP / Subnet");
+#if FEATURE_IPV6
     case LabelType::IP_CONFIG_V6:           return F("IPv6 Config");
+#endif
     case LabelType::GATEWAY:                return F("Gateway");
     case LabelType::CLIENT_IP:              return F("Client IP");
     #if FEATURE_MDNS
@@ -357,7 +359,12 @@ String getValue(LabelType::Enum label) {
     case LabelType::WIFI_RSSI:              return String(WiFi.RSSI());
     case LabelType::IP_CONFIG:              return String(useStaticIP() ? getLabel(LabelType::IP_CONFIG_STATIC) : getLabel(
                                                             LabelType::IP_CONFIG_DYNAMIC));
+#if FEATURE_IPV6
     case LabelType::IP_CONFIG_V6:           return WiFi.localIPv6().toString();
+    // FIXME TD-er: No idea why DHCP6 is broken now.
+    // Check Tasmota PR for IPv6 since we're now using their patched ESP32 SDK framework
+    // https://github.com/arendst/Tasmota/pull/17230/files
+#endif
     case LabelType::IP_CONFIG_STATIC:       break;
     case LabelType::IP_CONFIG_DYNAMIC:      break;
     case LabelType::IP_ADDRESS:             return NetworkLocalIP().toString();

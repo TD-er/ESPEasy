@@ -152,9 +152,11 @@ void WiFiEvent(WiFiEvent_t event, arduino_event_info_t info) {
       ignoreDisconnectEvent = false;
       WiFiEventData.markGotIP();
       break;
+#if FEATURE_IPV6
     case ARDUINO_EVENT_WIFI_STA_GOT_IP6:
       WiFiEventData.processedGotIPv6 = false;
       break;
+#endif
     case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
       #if ESP_IDF_VERSION_MAJOR > 3
       WiFiEventData.markConnectedAPmode(info.wifi_ap_staconnected.mac);

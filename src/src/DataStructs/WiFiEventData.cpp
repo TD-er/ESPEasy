@@ -46,7 +46,14 @@ bool WiFiEventData_t::WiFiConnectAllowed() const {
 }
 
 bool WiFiEventData_t::unprocessedWifiEvents() const {
-  if (processedConnect && processedDisconnect && processedGotIP && processedDHCPTimeout && processedGotIPv6)
+  if (processedConnect && 
+      processedDisconnect && 
+      processedGotIP && 
+      processedDHCPTimeout 
+#if FEATURE_IPV6
+      && processedGotIPv6
+#endif
+      )
   {
     return false;
   }
@@ -97,7 +104,9 @@ void WiFiEventData_t::clear_processed_flags() {
   processedConnect          = true;
   processedDisconnect       = true;
   processedGotIP            = true;
+#if FEATURE_IPV6
   processedGotIPv6          = true;
+#endif
   processedDHCPTimeout      = true;
   processedConnectAPmode    = true;
   processedDisconnectAPmode = true;
