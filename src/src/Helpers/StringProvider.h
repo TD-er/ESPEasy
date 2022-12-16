@@ -84,6 +84,7 @@ struct LabelType {
     IP_ADDRESS,              // 192.168.1.123
     IP_SUBNET,               // 255.255.255.0
     IP_ADDRESS_SUBNET,       // 192.168.1.123 / 255.255.255.0
+    IP_CONFIG_V6,
     GATEWAY,                 // 192.168.1.1
     CLIENT_IP,               // 192.168.1.67
     #if FEATURE_MDNS

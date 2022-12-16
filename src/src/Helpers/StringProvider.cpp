@@ -129,6 +129,7 @@ const __FlashStringHelper * getLabel(LabelType::Enum label) {
     case LabelType::IP_ADDRESS:             return F("IP Address");
     case LabelType::IP_SUBNET:              return F("IP Subnet");
     case LabelType::IP_ADDRESS_SUBNET:      return F("IP / Subnet");
+    case LabelType::IP_CONFIG_V6:           return F("IPv6 Config");
     case LabelType::GATEWAY:                return F("Gateway");
     case LabelType::CLIENT_IP:              return F("Client IP");
     #if FEATURE_MDNS
@@ -356,6 +357,7 @@ String getValue(LabelType::Enum label) {
     case LabelType::WIFI_RSSI:              return String(WiFi.RSSI());
     case LabelType::IP_CONFIG:              return String(useStaticIP() ? getLabel(LabelType::IP_CONFIG_STATIC) : getLabel(
                                                             LabelType::IP_CONFIG_DYNAMIC));
+    case LabelType::IP_CONFIG_V6:           return WiFi.localIPv6().toString();
     case LabelType::IP_CONFIG_STATIC:       break;
     case LabelType::IP_CONFIG_DYNAMIC:      break;
     case LabelType::IP_ADDRESS:             return NetworkLocalIP().toString();

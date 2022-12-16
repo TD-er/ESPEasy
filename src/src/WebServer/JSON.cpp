@@ -236,6 +236,7 @@ void handle_json()
         LabelType::IP_CONFIG,
         LabelType::IP_ADDRESS,
         LabelType::IP_SUBNET,
+        LabelType::IP_CONFIG_V6,
         LabelType::GATEWAY,
         LabelType::STA_MAC,
         LabelType::DNS_1,

@@ -417,6 +417,7 @@ void handle_sysinfo_Network() {
 
   addRowLabelValue(LabelType::IP_CONFIG);
   addRowLabelValue(LabelType::IP_ADDRESS_SUBNET);
+  addRowLabelValue(LabelType::IP_CONFIG_V6);
   addRowLabelValue(LabelType::GATEWAY);
   addRowLabelValue(LabelType::CLIENT_IP);
   addRowLabelValue(LabelType::DNS);
