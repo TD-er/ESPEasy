@@ -2604,4 +2604,6 @@ To create/register a plugin, you have to :
   #ifdef ESP32
     #define FEATURE_IPV6 1
   #endif
+#endif
+
 #endif // CUSTOMBUILD_DEFINE_PLUGIN_SETS_H
