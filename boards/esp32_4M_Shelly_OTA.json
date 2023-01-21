@@ -1,0 +1,42 @@
+{
+  "build": {
+    "arduino":{
+      "ldscript": "esp32_out.ld",
+      "memory_type": "dio_qspi"
+    },
+    "core": "esp32",
+    "extra_flags": "-DARDUINO_ESP32_DEV -DBOARD_HAS_PSRAM -DARDUINO_USB_CDC_ON_BOOT=0 -DESP32_4M -DSHELLY_OTA",
+    "f_cpu": "160000000L",
+    "f_flash": "40000000L",
+    "flash_mode": "dio",
+    "mcu": "esp32",
+    "variant": "esp32",
+    "partitions": "esp32_partition_app1536k_spiffs448k.csv"
+  },
+  "connectivity": [
+    "wifi",
+    "bluetooth",
+    "ethernet",
+    "can"
+  ],
+  "debug": {
+    "openocd_target": "esp32.cfg"
+  },
+  "frameworks": [
+    "arduino",
+    "espidf"
+  ],
+  "name": "Shelly OTA ESP32 4M Flash ESPEasy 1536k Code/OTA 448k FS",
+  "upload": {
+    "flash_size": "4MB",
+    "maximum_ram_size": 327680,
+    "maximum_size": 1572864,
+    "require_upload_port": true,
+    "resetmethod": "nodemcu",
+    "before_reset": "default_reset",
+    "after_reset": "hard_reset",
+    "speed": 460800
+  },
+  "url": "https://en.wikipedia.org/wiki/ESP32",
+  "vendor": "Espressif"
+}

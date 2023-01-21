@@ -409,7 +409,25 @@ void fileSystemCheck()
   addLog(LOG_LEVEL_INFO, F("FS   : Mounting..."));
 #if defined(ESP32) && defined(USE_LITTLEFS)
   if (getPartionCount(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_SPIFFS) != 0 
-      && ESPEASY_FS.begin())
+  #ifdef SHELLY_OTA
+      // Shelly devices already have a partition table
+      // When flashing via the OTA script made by the people from Tasmota, 
+      // we are still bound to whatever partition definition Shelly intitally made.
+      && ESPEASY_FS.begin(
+        false,       // formatOnFail
+        "/littlefs", // basePath
+        10,          // maxOpenFiles
+        "fs_1"       // partitionLabel
+      )
+  #else
+      && ESPEASY_FS.begin(
+        false,       // formatOnFail
+        "/littlefs", // basePath
+        10,          // maxOpenFiles
+        "spiffs"     // partitionLabel
+      )
+  #endif
+  )
 #else
   if (ESPEASY_FS.begin())
 #endif
