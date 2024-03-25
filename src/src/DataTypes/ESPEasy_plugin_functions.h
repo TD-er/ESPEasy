@@ -60,7 +60,9 @@
 #define PLUGIN_PROCESS_CONTROLLER_DATA     48 // Can be called from the controller to signal the plugin to generate (or handle) sending the data.
 #define PLUGIN_PRIORITY_INIT_ALL           49 // Pre-initialize all plugins that are set to PowerManager priority (not implemented in plugins)
 #define PLUGIN_PRIORITY_INIT               50 // Pre-initialize a singe plugins that is set to PowerManager priority
+#ifdef USES_ESPEASY_NOW
 #define PLUGIN_FILTEROUT_CONTROLLER_DATA   51 // Can be called from the controller to query a task whether the data should be processed further.    
+#endif
 
 
 
