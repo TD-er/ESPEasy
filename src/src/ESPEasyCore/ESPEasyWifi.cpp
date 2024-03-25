@@ -523,7 +523,11 @@ void AttemptWiFiConnect() {
 // ********************************************************************************
 // Set Wifi config
 // ********************************************************************************
-bool prepareWiFi() {
+bool prepareWiFi() {  
+
+  #ifdef ESP32
+  registerWiFiEventHandler();
+  #endif
   if (!WiFi_AP_Candidates.hasKnownCredentials()) {
     if (!WiFiEventData.warnedNoValidWiFiSettings) {
       addLog(LOG_LEVEL_ERROR, F("WIFI : No valid wifi settings"));
@@ -929,6 +933,9 @@ void WifiDisconnect()
   WiFiEventData.processingDisconnect.clear();
   WiFiEventData.processedDisconnect = false;
   processDisconnect();
+  #ifdef ESP32
+  registerWiFiEventHandler();
+  #endif
   processingDisconnect = false;
 }
 
