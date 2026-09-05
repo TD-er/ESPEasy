@@ -282,9 +282,9 @@ boolean Plugin_124(uint8_t function, struct EventStruct *event, String& string)
         state += ull2String(val, 2);
         state.remove(3, 1); // Delete leading 1 we added
         TaskValuesWriterHelper data(event);
-        data.writeCustom(varNr++, label, state, true);
-
-        // success = true;
+        data.setWriteRegularTaskValuesFirst();
+        data.writeCustom(varNr++, label, state);
+        success = true; // Do not write other taskvalues
       }
       break;
     }

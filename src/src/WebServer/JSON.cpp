@@ -13,7 +13,7 @@
 
 #include "../Helpers/_Plugin_init.h"
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-#include "../Helpers/ESPEasy_UnitOfMeasure.h"
+# include "../Helpers/ESPEasy_UnitOfMeasure.h"
 #endif
 #include "../Helpers/KeyValueWriter_JSON.h"
 #include "../Helpers/Numerical.h"
@@ -113,6 +113,7 @@ void handle_csvval()
 #endif // ifdef WEBSERVER_CSVVAL
 
 #ifdef WEBSERVER_JSON
+
 // ********************************************************************************
 // Web Interface JSON page (no password!)
 // ********************************************************************************
@@ -124,32 +125,32 @@ void handle_json()
   bool showSystem             = true;
   bool showWifi               = true;
 
-#if FEATURE_ETHERNET
+# if FEATURE_ETHERNET
   bool showEthernet = true;
-#endif // if FEATURE_ETHERNET
+# endif // if FEATURE_ETHERNET
   bool showDataAcquisition = true;
   bool showTaskDetails     = true;
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
   bool showNodes = true;
-#endif
-#if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
+# endif
+# if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
   bool showPluginStats = getFormItemInt(F("showpluginstats"), 0) != 0;
-#endif
+# endif
 
   if (equals(webArg(F("view")), F("sensorupdate"))) {
     showSystem = false;
     showWifi   = false;
-#if FEATURE_ETHERNET
+# if FEATURE_ETHERNET
     showEthernet = false;
-#endif // if FEATURE_ETHERNET
+# endif // if FEATURE_ETHERNET
     showDataAcquisition = false;
     showTaskDetails     = false;
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
     showNodes = false;
-#endif
-#if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
+# endif
+# if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
     showPluginStats = hasArg(F("showpluginstats"));
-#endif
+# endif
   }
 
   TXBuffer.startJsonStream();
@@ -168,7 +169,7 @@ void handle_json()
           {
             static const LabelType::Enum wdlabels[] PROGMEM =
             {
-              LabelType::LOAD_PCT, 
+              LabelType::LOAD_PCT,
               LabelType::LOOP_COUNT,
 
               LabelType::MAX_LABEL
@@ -183,17 +184,17 @@ void handle_json()
             LabelType::BUILD_DESC,
             LabelType::GIT_BUILD,
             LabelType::SYSTEM_LIBRARIES,
-#ifdef ESP32
+# ifdef ESP32
             LabelType::ESP_IDF_SDK_VERSION,
-#endif
+# endif
             LabelType::PLUGIN_COUNT,
             LabelType::PLUGIN_DESCRIPTION,
             LabelType::BUILD_TIME,
             LabelType::BINARY_FILENAME,
             LabelType::LOCAL_TIME,
-#if FEATURE_EXT_RTC
+# if FEATURE_EXT_RTC
             LabelType::EXT_RTC_UTC_TIME,
-#endif
+# endif
             LabelType::TIME_SOURCE,
             LabelType::TIME_WANDER,
             LabelType::ISNTP,
@@ -201,43 +202,43 @@ void handle_json()
             LabelType::UNIT_NAME,
             LabelType::UPTIME,
             LabelType::UPTIME_MS,
-#if FEATURE_INTERNAL_TEMPERATURE
+# if FEATURE_INTERNAL_TEMPERATURE
             LabelType::INTERNAL_TEMPERATURE,
-#endif
+# endif
             LabelType::BOOT_TYPE,
             LabelType::RESET_REASON,
             LabelType::CPU_ECO_MODE,
 
-#if defined(CORE_POST_2_5_0) || defined(ESP32)
-# ifndef LIMIT_BUILD_SIZE
+# if defined(CORE_POST_2_5_0) || defined(ESP32)
+#  ifndef LIMIT_BUILD_SIZE
             LabelType::HEAP_MAX_FREE_BLOCK, // 7654
-# endif
-#endif // if defined(CORE_POST_2_5_0) || defined(ESP32)
-#if defined(CORE_POST_2_5_0)
-# ifndef LIMIT_BUILD_SIZE
+#  endif
+# endif // if defined(CORE_POST_2_5_0) || defined(ESP32)
+# if defined(CORE_POST_2_5_0)
+#  ifndef LIMIT_BUILD_SIZE
             LabelType::HEAP_FRAGMENTATION, // 12
-# endif
-#endif // if defined(CORE_POST_2_5_0)
+#  endif
+# endif // if defined(CORE_POST_2_5_0)
             LabelType::FREE_MEM,
-#ifdef USE_SECOND_HEAP
+# ifdef USE_SECOND_HEAP
             LabelType::FREE_HEAP_IRAM,
-#endif
+# endif
             LabelType::FREE_STACK,
 
-#ifdef ESP32
+# ifdef ESP32
             LabelType::HEAP_SIZE,
             LabelType::HEAP_MIN_FREE,
-# ifdef BOARD_HAS_PSRAM
+#  ifdef BOARD_HAS_PSRAM
             LabelType::PSRAM_SIZE,
             LabelType::PSRAM_FREE,
             LabelType::PSRAM_MIN_FREE,
             LabelType::PSRAM_MAX_FREE_BLOCK,
-# endif // BOARD_HAS_PSRAM
-#endif // ifdef ESP32
+#  endif // BOARD_HAS_PSRAM
+# endif // ifdef ESP32
             LabelType::ESP_CHIP_MODEL,
-#ifdef ESP32
+# ifdef ESP32
             LabelType::ESP_CHIP_REVISION,
-#endif // ifdef ESP32
+# endif // ifdef ESP32
             LabelType::FLASH_CHIP_ID,
             LabelType::FLASH_CHIP_VENDOR,
             LabelType::FLASH_CHIP_MODEL,
@@ -252,16 +253,16 @@ void handle_json()
             LabelType::TIMEZONE_OFFSET,
             LabelType::LATITUDE,
             LabelType::LONGITUDE,
-#if FEATURE_SYSLOG
+# if FEATURE_SYSLOG
             LabelType::SYSLOG_LOG_LEVEL,
-#endif
+# endif
             LabelType::SERIAL_LOG_LEVEL,
 # ifdef WEBSERVER_LOG
             LabelType::WEB_LOG_LEVEL,
-#endif
-#if FEATURE_SD
+# endif
+# if FEATURE_SD
             LabelType::SD_LOG_LEVEL,
-#endif // if FEATURE_SD
+# endif // if FEATURE_SD
 
 
             LabelType::MAX_LABEL
@@ -281,15 +282,15 @@ void handle_json()
 
               if (writer) {
                 writer->write({ F("Network Index"), x + 1 });
-#ifdef WEBSERVER_NETWORK
-# ifdef ESP32
+# ifdef WEBSERVER_NETWORK
+#  ifdef ESP32
                 ESPEasy::net::write_NetworkAdapterFlags(x, writer->createChild(F("Interface")).get());
-#ifndef LIMIT_BUILD_SIZE
+#   ifndef LIMIT_BUILD_SIZE
                 ESPEasy::net::write_NetworkAdapterPort(x, writer->createChild(F("Port")).get());
-#endif
+#   endif
                 ESPEasy::net::write_IP_config(x, writer->createChild(F("IP")).get());
-# endif // ifdef ESP32
-#endif // ifdef WEBSERVER_NETWORK
+#  endif // ifdef ESP32
+# endif // ifdef WEBSERVER_NETWORK
                 ESPEasy::net::write_NetworkConnectionInfo(x, writer->createChild(F("Connection")).get());
               }
 
@@ -297,24 +298,24 @@ void handle_json()
                 static const LabelType::Enum labels[] PROGMEM =
                 {
                   LabelType::HOST_NAME,
-#if FEATURE_MDNS
+# if FEATURE_MDNS
                   LabelType::USE_MDNS,
                   LabelType::M_DNS,
-#endif // if FEATURE_MDNS
+# endif // if FEATURE_MDNS
                   //        LabelType::IP_CONFIG,
-#ifdef ESP8266
+# ifdef ESP8266
                   LabelType::IP_ADDRESS,
-# if FEATURE_USE_IPV6
+#  if FEATURE_USE_IPV6
                   LabelType::IP6_LOCAL,
                   LabelType::IP6_GLOBAL,
                   LabelType::ENABLE_IPV6,
-# endif // if FEATURE_USE_IPV6
+#  endif // if FEATURE_USE_IPV6
                   LabelType::IP_SUBNET,
                   LabelType::GATEWAY,
                   LabelType::STA_MAC,
                   LabelType::DNS_1,
                   LabelType::DNS_2,
-#endif // ifdef ESP8266
+# endif // ifdef ESP8266
                   LabelType::SSID,
                   LabelType::BSSID,
                   LabelType::CHANNEL,
@@ -328,31 +329,31 @@ void handle_json()
                   LabelType::FORCE_WIFI_BG,
                   LabelType::RESTART_WIFI_LOST_CONN,
                   LabelType::FORCE_WIFI_NOSLEEP,
-#ifdef SUPPORT_ARP
+# ifdef SUPPORT_ARP
                   LabelType::PERIODICAL_GRAT_ARP,
-#endif // ifdef SUPPORT_ARP
-#ifdef USES_ESPEASY_NOW
+# endif // ifdef SUPPORT_ARP
+# ifdef USES_ESPEASY_NOW
                   LabelType::USE_ESPEASY_NOW,
                   LabelType::FORCE_ESPEASY_NOW_CHANNEL,
-#endif // ifdef USES_ESPEASY_NOW
+# endif // ifdef USES_ESPEASY_NOW
                   LabelType::CONNECTION_FAIL_THRESH,
-#if FEATURE_SET_WIFI_TX_PWR
+# if FEATURE_SET_WIFI_TX_PWR
                   LabelType::WIFI_TX_MAX_PWR,
                   LabelType::WIFI_CUR_TX_PWR,
                   LabelType::WIFI_SENS_MARGIN,
                   LabelType::WIFI_SEND_AT_MAX_TX_PWR,
-#endif // if FEATURE_SET_WIFI_TX_PWR
+# endif // if FEATURE_SET_WIFI_TX_PWR
                   LabelType::WIFI_NR_RECONNECT_ATTEMPTS,
                   LabelType::WIFI_MAX_UPTIME_AUTO_START_AP,
                   LabelType::WIFI_AP_MINIMAL_ON_TIME,
-#ifdef ESP32
+# ifdef ESP32
                   LabelType::WIFI_PASSIVE_SCAN,
-#endif
+# endif
                   LabelType::WIFI_USE_LAST_CONN_FROM_RTC,
                   LabelType::WIFI_RSSI,
-#ifndef ESP32
+# ifndef ESP32
                   LabelType::WAIT_WIFI_CONNECT,
-#endif
+# endif
                   LabelType::HIDDEN_SSID_SLOW_CONNECT,
                   LabelType::CONNECT_HIDDEN_SSID,
                   LabelType::SDK_WIFI_AUTORECONNECT,
@@ -368,7 +369,7 @@ void handle_json()
         }
       }
 
-#if FEATURE_ESPEASY_P2P
+# if FEATURE_ESPEASY_P2P
 
       if (showNodes) {
         auto nodesWriter = mainLevelWriter.createChildArray(F("nodes"));
@@ -406,7 +407,7 @@ void handle_json()
                   }
                 }
                 writer->write({ F("ip"), formatIP(it->second.IP()) });
-# if FEATURE_USE_IPV6
+#  if FEATURE_USE_IPV6
 
                 if (it->second.hasIPv6_mac_based_link_local) {
                   writer->write({ F("ipv6local"), formatIP(it->second.IPv6_link_local(true), true) });
@@ -415,14 +416,14 @@ void handle_json()
                 if (it->second.hasIPv6_mac_based_link_global) {
                   writer->write({ F("ipv6global"), formatIP(it->second.IPv6_global()) });
                 }
-# endif // if FEATURE_USE_IPV6
+#  endif // if FEATURE_USE_IPV6
                 writer->write({ F("age"), it->second.getAge() });
               } // if node info exists
             }   // for loop
           }
         }
       }
-#endif // if FEATURE_ESPEASY_P2P
+# endif // if FEATURE_ESPEASY_P2P
     }
 
     taskIndex_t firstTaskIndex = 0;
@@ -450,6 +451,7 @@ void handle_json()
 
       if (sensorsWriter) {
         sensorsWriter->setWriteWhenEmpty();
+
         for (taskIndex_t TaskIndex = firstTaskIndex; TaskIndex <= lastActiveTaskIndex && validTaskIndex(TaskIndex); TaskIndex++)
         {
           const deviceIndex_t DeviceIndex = getDeviceIndex_from_TaskIndex(TaskIndex);
@@ -489,12 +491,13 @@ void handle_json()
                   struct EventStruct TempEvent(TaskIndex);
                   TempEvent.kvWriter = taskValueWriter.get();
                   TaskValuesWriterHelper data(&TempEvent);
+
                   // FIXME tonhuisman: HasFormatUserVar is not really compatible with Derived Values...
                   data.writeTaskValues();
                 }
               }
 
-#if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
+# if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
 
               if (showPluginStats && Device[DeviceIndex].PluginStats) {
                 PluginTaskData_base *taskData = getPluginTaskDataBaseClassOnly(TaskIndex);
@@ -505,7 +508,7 @@ void handle_json()
                   taskData->plot_ChartJS(true);
                 }
               }
-#endif // if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
+# endif // if FEATURE_PLUGIN_STATS && FEATURE_CHART_JS
 
 
               if (showDataAcquisition) {
@@ -537,16 +540,16 @@ void handle_json()
                   }
                 }
 
-#if FEATURE_I2CMULTIPLEXER
+# if FEATURE_I2CMULTIPLEXER
                 uint8_t i2cBus = 0;
-# if FEATURE_I2C_MULTIPLE
+#  if FEATURE_I2C_MULTIPLE
                 i2cBus = Settings.getI2CInterface(TaskIndex);
-# endif
+#  endif
 
                 if ((Device[DeviceIndex].Type == DEVICE_TYPE_I2C) && isI2CMultiplexerEnabled(i2cBus)) {
-# if FEATURE_I2C_MULTIPLE
+#  if FEATURE_I2C_MULTIPLE
                   taskWriter->write({ F("I2C_Interface"), static_cast<int>(i2cBus + 1) });
-# endif
+#  endif
                   int8_t channel = Settings.I2C_Multiplexer_Channel[TaskIndex];
 
                   if (bitRead(Settings.I2C_SPI_bus_Flags[TaskIndex], I2C_FLAGS_MUX_MULTICHANNEL)) {
@@ -569,7 +572,7 @@ void handle_json()
                     }
                   }
                 }
-#endif // if FEATURE_I2CMULTIPLEXER
+# endif // if FEATURE_I2CMULTIPLEXER
               }
 
               taskWriter->write({ F("TaskEnabled"),
@@ -577,9 +580,9 @@ void handle_json()
               taskWriter->write({ F("TaskNumber"), TaskIndex + 1 });
 
               if (showSpecificTask) {
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
                 taskWriter->write({ F("ShowUoM"), Settings.ShowUnitOfMeasureOnDevicesPage() });
-#endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+# endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
                 taskWriter->write({ F("TTL"),     ttl_json * 1000 });
               }
             }
@@ -589,9 +592,9 @@ void handle_json()
     }
 
     if (!showSpecificTask) {
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+# if FEATURE_TASKVALUE_UNIT_OF_MEASURE
       mainLevelWriter.write({ F("ShowUoM"), Settings.ShowUnitOfMeasureOnDevicesPage() });
-#endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+# endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
       mainLevelWriter.write({ F("TTL"), lowest_ttl_json * 1000 });
     }
   }
@@ -600,9 +603,9 @@ void handle_json()
   STOP_TIMER(HANDLE_SERVING_WEBPAGE_JSON);
 }
 
-void handle_json_stream_task_value_data(TaskValuesWriterHelper* data)
+void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
 {
-  if (!data || !data->event || !data->event->kvWriter) return;
+  if (!data || !data->event || !data->event->kvWriter) { return; }
 
   auto writer = data->event->kvWriter->createChild();
 
@@ -615,26 +618,36 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper* data)
     }
 
     {
-      KeyValueStruct kv(F("Name"), data->valName);
+      String tmp = data->valName;
+
+      if (tmp.indexOf('"') != -1) {
+        tmp.replace(F("\""), F("\\\""));
+      }
+      KeyValueStruct kv(F("Name"), tmp);
       kv.setID(data->valName_id);
       writer->write(kv);
     }
     {
-      KeyValueStruct kv(F("Value"), data->value);
+      String tmp = data->value;
+
+      if (tmp.indexOf('"') != -1) {
+        tmp.replace(F("\""), F("\\\""));
+      }
+      KeyValueStruct kv(F("Value"), tmp);
       kv.setID(data->value_id);
       writer->write(kv);
     }
 
     writer->write({ F("ValueNumber"), data->valueNumber + 1 });
     writer->write({ F("NrDecimals"),  nrDecimals });
-#if FEATURE_STRING_VARIABLES
+# if FEATURE_STRING_VARIABLES
 
     if (!data->presentation.isEmpty()) {
       KeyValueStruct kv(F("Presentation"), data->presentation);
       kv.setID(data->presentation_id);
       writer->write(kv);
     }
-#endif // if FEATURE_STRING_VARIABLES
+# endif // if FEATURE_STRING_VARIABLES
 
     if (!data->uom.isEmpty()) {
       KeyValueStruct kv(F("UoM"), data->uom);
@@ -644,34 +657,7 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper* data)
   }
 }
 
-void handle_json_stream_task_value_data(KeyValueWriter*parent,
-                                        uint16_t       valueNumber,
-                                        const String & valueName,
-                                        uint8_t        nrDecimals,
-                                        const String & value,
-                                        const String & presentation,
-                                        const String & uom)
-{
-  auto writer = parent->createChild();
-
-  if (writer) {
-    writer->write({ F("ValueNumber"), valueNumber });
-    writer->write({ F("Name"),        valueName });
-    writer->write({ F("NrDecimals"),  nrDecimals });
-#if FEATURE_STRING_VARIABLES
-
-    if (!presentation.isEmpty()) {
-      writer->write({ F("Presentation"), presentation });
-    }
-#endif // if FEATURE_STRING_VARIABLES
-
-    if (!uom.isEmpty()) {
-      writer->write({ F("UoM"), uom });
-    }
-    writer->write({ F("Value"), value });
-  }
-}
-#endif
+#endif // ifdef WEBSERVER_JSON
 
 // ********************************************************************************
 // JSON formatted timing statistics

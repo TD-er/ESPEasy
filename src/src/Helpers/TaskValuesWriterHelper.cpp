@@ -30,6 +30,7 @@ void TaskValuesWriterHelper::clear()
   valName_id.clear();
   value.clear();
   value_id.clear();
+  attribute.clear();
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   uom.clear();
 #endif
@@ -37,8 +38,9 @@ void TaskValuesWriterHelper::clear()
   hasPresentation = false;
   presentation.clear();
 #endif // if FEATURE_STRING_VARIABLES
-  nrDecimals = 0;
-  addTrailingBreak = false;
+  nrDecimals                   = 0;
+  _writeRegularTaskValuesFirst = false;
+  _isLast                      = false;
 }
 
 void TaskValuesWriterHelper::setID(uint8_t varNr)
@@ -62,12 +64,17 @@ void TaskValuesWriterHelper::setID(uint8_t varNr)
 #endif // if FEATURE_STRING_VARIABLES
 }
 
+void TaskValuesWriterHelper::setAttribute(const __FlashStringHelper *attr) { attribute = attr; }
+
 void TaskValuesWriterHelper::write()
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
 
-  if (event->kvWriter) { handle_json_stream_task_value_data(this); }
-  else { pluginWebformShowValue(); }
+  if (event->kvWriter) {
+    handle_json_stream_task_value_data(this);
+  } else {
+    pluginWebformShowValue();
+  }
 }
 
 void TaskValuesWriterHelper::writeTaskValues()
@@ -85,18 +92,25 @@ void TaskValuesWriterHelper::writeTaskValues()
 #endif
 }
 
-void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const __FlashStringHelper * label, const String& val, bool addTrailing_Break)
+void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const __FlashStringHelper *label, const String& val, bool isLast)
 {
-    writeCustom(varNr, String(label), val, addTrailing_Break);
+  writeCustom(varNr, String(label), val, isLast);
 }
 
-void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const String& label, const String& val, bool addTrailing_Break)
+void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const String& label, const String& val, bool isLast)
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
+
+  if (_writeRegularTaskValuesFirst) {
+    writeRegularTaskValues();
+#if FEATURE_STRING_VARIABLES
+    writeDerivedTaskValues();
+#endif
+  }
   clear();
+  _isLast = isLast;
   valName = label;
-  value = val;
-  addTrailingBreak = addTrailing_Break;
+  value   = val;
   setID(varNr);
   write();
 }
@@ -191,27 +205,36 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
 
 void TaskValuesWriterHelper::pluginWebformShowValue()
 {
-if (!validDeviceIndex(deviceIndex)) return;
+  if (!validDeviceIndex(deviceIndex)) { return; }
+
+  if ((valueNumber == 0) && _monoSpaced) {                                        addHtml(F("<pre>")); } // To keep spaces etc. in the shown
+                                                                                                         // output
+
   if (valueNumber > 0) {
     addHtmlDiv(F("div_br"));
   }
-  if (hasPresentation) value = presentation;
-  else if (!uom.isEmpty())
-   value += concat(' ', uom);
+
+  if (hasPresentation) { value = presentation; }
+  else if (!uom.isEmpty()) {
+    value += concat(' ', uom);
+  }
 
   String valName_tmp(valName);
 
-  if (!valName_tmp.endsWith(F(":"))) {
+  if (!_monoSpaced && !valName_tmp.endsWith(F(":"))) {
     valName_tmp += ':';
   }
-  addHtmlDiv(F("div_l"), valName_tmp, valName_id);
-  addHtmlDiv(F("div_r"), value,       value_id);
+  addHtmlDiv(F("div_l"), valName_tmp, valName_id, attribute);
 
-  if (addTrailingBreak) {
-    addHtmlDiv(F("div_br"));
+  if (!value.isEmpty()) {
+    addHtmlDiv(F("div_r"), value, value_id);
+  }
+
+  if (_isLast && _monoSpaced) {
+    addHtml(F("</pre>")); // To keep spaces etc. in the shown output
+    _monoSpaced = false;
   }
 }
-
 
 bool TaskValuesWriterHelper::initRegularTaskValue(uint8_t varNr)
 {
@@ -253,4 +276,3 @@ bool TaskValuesWriterHelper::initRegularTaskValue(uint8_t varNr)
 
   return true;
 }
-

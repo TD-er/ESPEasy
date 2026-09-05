@@ -89,12 +89,13 @@ boolean Plugin_082(uint8_t function, struct EventStruct *event, String& string) 
       if ((nullptr != P082_data) && P082_data->isInitialized()) {
         uint8_t varNr = VARS_PER_TASK;
         TaskValuesWriterHelper data(event);
+        data.setWriteRegularTaskValuesFirst();
         data.writeCustom(varNr++, F("Fix"), String(P082_data->hasFix(P082_TIMEOUT) ? 1 : 0));
         data.writeCustom(varNr++, F("Tracked"),
                                String(P082_data->gps->satellitesStats.nrSatsTracked()));
-        data.writeCustom(varNr++, F("Best SNR"), String(P082_data->gps->satellitesStats.getBestSNR()), true);
+        data.writeCustom(varNr++, F("Best SNR"), String(P082_data->gps->satellitesStats.getBestSNR()));
 
-        // success = true;
+        success = true; // Do not write other taskvalues
       }
       break;
     }

@@ -477,7 +477,8 @@ boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
             
             string += value;
             TaskValuesWriterHelper data(event);
-            data.writeCustom(varNr, label, value, true);
+            data.writeCustom(varNr, label, value);
+            success = true; // Do not write other taskvalues
           }
         }
         success = true; // Don't show the default value data

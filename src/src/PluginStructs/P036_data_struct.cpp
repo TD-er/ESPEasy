@@ -2548,18 +2548,15 @@ void P036_data_struct::CreateScrollingPageLine(tScrollingPageLines *ScrollingPag
 }
 
 # if P036_FEATURE_DISPLAY_PREVIEW
-bool P036_data_struct::web_show_values() {
-  addHtml(F("<pre>")); // To keep spaces etc. in the shown output
-
+bool P036_data_struct::web_show_values(struct EventStruct *event) {
+  TaskValuesWriterHelper data(event);
   for (uint8_t i = 0; i < ScrollingPages.linesPerFrameDef; ++i) {
-    addHtmlDiv(F("div_l"), currentLines[i], EMPTY_STRING, F("style='font-size:75%;'"));
-
-    if (i != ScrollingPages.linesPerFrameDef - 1) {
-      addHtmlDiv(F("div_br"));
-    }
+    const bool isLast = i == (ScrollingPages.linesPerFrameDef - 1);
+    data.setMonoSpaced();
+    data.setAttribute(F("style='font-size:75%;'"));
+    data.writeCustom(i, currentLines[i], EMPTY_STRING, isLast);
   }
-  addHtml(F("</pre>"));
-  return true;
+  return true; // Don't show anything else
 }
 
 # endif // if P036_FEATURE_DISPLAY_PREVIEW

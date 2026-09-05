@@ -16,12 +16,27 @@ struct TaskValuesWriterHelper {
 
   void setID(uint8_t varNr);
 
+  void setAttribute(const __FlashStringHelper *attr);
+
+  void setAttribute(const String& attr) { attribute = attr; }
+
+  void setWriteRegularTaskValuesFirst() { _writeRegularTaskValuesFirst = true; }
+
+  void setMonoSpaced()                  { _monoSpaced = true; }
+
+
   void write();
 
   void writeTaskValues();
 
-  void writeCustom(uint8_t varNr, const __FlashStringHelper * label, const String& val, bool addTrailing_Break = false);
-  void writeCustom(uint8_t varNr, const String& label, const String& val, bool addTrailing_Break = false);
+  void writeCustom(uint8_t                    varNr,
+                   const __FlashStringHelper *label,
+                   const String             & val,
+                   bool                       isLast = false);
+  void writeCustom(uint8_t       varNr,
+                   const String& label,
+                   const String& val,
+                   bool          isLast = false);
 
 private:
 
@@ -30,14 +45,14 @@ private:
   void writeDerivedTaskValues();
 #endif
 
-void pluginWebformShowValue();
+  void pluginWebformShowValue();
 
   bool initRegularTaskValue(uint8_t varNr);
 
 public:
 
   EventStruct * const event = nullptr;
-  String              valName, valName_id, value, value_id;
+  String              valName, valName_id, value, value_id, attribute;
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   String uom, uom_id;
 #endif
@@ -49,7 +64,10 @@ public:
   uint8_t       nrDecimals{};
   uint8_t       valueCount{};
   uint8_t       valueNumber{};
-  deviceIndex_t deviceIndex      = INVALID_DEVICE_INDEX;
-  bool          addTrailingBreak = false;
+  deviceIndex_t deviceIndex = INVALID_DEVICE_INDEX;
+
+  bool _writeRegularTaskValuesFirst{};
+  bool _monoSpaced{};
+  bool _isLast{};
 
 };
