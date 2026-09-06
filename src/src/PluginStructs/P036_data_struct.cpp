@@ -2554,7 +2554,7 @@ bool P036_data_struct::web_show_values(struct EventStruct *event) {
   const uint8_t nrLines = ScrollingPages.linesPerFrameDef;
   for (uint8_t i = 0; i < nrLines; ++i) {
     const bool isLast = i == (nrLines - 1);
-    data.setMonoSpaced();
+    data.setPreformatted();
     data.writeCustom(i, currentLines[i], EMPTY_STRING, F("style='font-size:75%;'"), isLast);
   }
   return true; // Don't show anything else

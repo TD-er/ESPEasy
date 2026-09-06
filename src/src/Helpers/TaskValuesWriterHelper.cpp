@@ -129,10 +129,10 @@ void TaskValuesWriterHelper::writeCustom(
 #endif
   }
   valueNumber = varNr;
-  _isLast   = isLast;
-  valName   = label;
-  value     = val;
-  attribute = attr;
+  _isLast     = isLast;
+  valName     = label;
+  value       = val;
+  attribute   = attr;
   write();
 }
 
@@ -178,7 +178,7 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
 
         if (!it->second.isEmpty()) {
           valueNumber = varNr;
-          value = it->second;
+          value       = it->second;
 
           // FIXME TD-er: Why these differences between JSON and Web?
           if (event->kvWriter)
@@ -228,14 +228,14 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
 
-  if ((valueNumber == 0) && _monoSpaced) {
+  if ((valueNumber == 0) && _preformatted) {
     addHtml(F("<pre>")); // To keep spaces etc. in the shown output
   }
 
   if (valueNumber > 0) {
     addHtmlDiv(F("div_br"));
   }
-  String value_tmp(_monoSpaced ? value : stripQuotes(value));
+  String value_tmp(_preformatted ? value : stripQuotes(value));
 
 #if FEATURE_STRING_VARIABLES
 
@@ -246,12 +246,15 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
 #endif // if FEATURE_STRING_VARIABLES
 
   addHtmlDiv(F("div_l"), valName, format_ID(ID_type::ValueName), attribute);
-  addHtmlDiv(F("div_r"), value_tmp, format_ID(ID_type::Value));
 
-  if (_isLast && _monoSpaced) {
+  if (!value_tmp.isEmpty() || !_preformatted) {
+    addHtmlDiv(F("div_r"), value_tmp, format_ID(ID_type::Value));
+  }
+
+  if (_isLast && _preformatted) {
     addHtml(F("</pre>")); // To keep spaces etc. in the shown output
-    _monoSpaced = false;
-    _isLast     = false;
+    _preformatted = false;
+    _isLast       = false;
   }
 }
 

@@ -619,7 +619,7 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
       nrDecimals = 255;
     }
 
-    const KeyValueStruct::Format format = data->_monoSpaced 
+    const KeyValueStruct::Format format = data->_preformatted 
       ? KeyValueStruct::Format::PreFormatted
       : KeyValueStruct::Format::Default;
 

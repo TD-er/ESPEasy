@@ -34,7 +34,7 @@ struct TaskValuesWriterHelper {
 
   void   setWriteRegularTaskValuesFirst() { _writeRegularTaskValuesFirst = true; }
 
-  void   setMonoSpaced()                  { _monoSpaced = true; }
+  void   setPreformatted()                { _preformatted = true; }
 
 
   void   write();
@@ -85,7 +85,7 @@ public:
   deviceIndex_t deviceIndex = INVALID_DEVICE_INDEX;
 
   bool _writeRegularTaskValuesFirst{};
-  bool _monoSpaced{};
+  bool _preformatted{};
   bool _isLast{};
 
 };
