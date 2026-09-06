@@ -470,10 +470,10 @@ boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
           label += (P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);          // 4 = nr of bytes in an uint32_t.
 
           if ((P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
-            const String value = P129_formatValue(
+            const String value = wrap_String(P129_formatValue(
               UserVar.getUint32(event->TaskIndex, varNr),
               event,
-              true);
+              true), '"');
             
             string += value;
             TaskValuesWriterHelper data(event);

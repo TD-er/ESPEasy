@@ -111,9 +111,7 @@ void KeyValueWriter_JSON::write(const KeyValueStruct& kv)
 
   if (!kv._key.isEmpty()) {
     auto& pr = getPrint();
-    pr.write('"');
-    kv._key.print(pr);
-    pr.write('"');
+    pr.print(to_json_value(kv._key.toString(), true));
     pr.write(':');
   }
 

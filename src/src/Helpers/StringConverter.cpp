@@ -545,6 +545,7 @@ String wrap_braces(const String& string) {
 }
 
 String wrap_String(const String& string, char wrap) {
+  if (stringWrappedWithChar(string, wrap)) return string;
   return wrap_String(string, wrap, wrap);
 }
 
@@ -594,7 +595,9 @@ String to_json_value(const String& value, bool wrapInQuotes) {
     return F("\"\"");
   }
   
-  if (is_json_formatted(value)) return value;
+  if (is_json_formatted(value)) {
+    if (!wrapInQuotes) return value;
+  }
 
   if (wrapInQuotes || mustConsiderAsJSONString(value)) {
     // Is not a numerical value, or BIN/HEX notation, thus wrap with quotes
@@ -621,14 +624,14 @@ String to_json_value(const String& value, bool wrapInQuotes) {
 */
           ) {
         // Must replace characters, so make a deepcopy
-        String tmpValue(value);
+        String tmpValue = stripWrappingChar(value, '"');
         tmpValue.replace('\b', '^');  //  \b  Backspace (ascii code 08)
         tmpValue.replace('\t', ' ');  //  \t  Tab
         tmpValue.replace('\n', '^');  //  \n  New line
         tmpValue.replace('\f', '^');  //  \f  Form feed (ascii code 0C)
         tmpValue.replace('\r', '^');  //  \r  Carriage return
         tmpValue.replace('\\', '^');  //  Backslash
-        tmpValue.replace('"',  '\''); //  Double quote
+        tmpValue.replace(F("\""), F("\\\"")); //  Double quote
         return wrap_String(tmpValue, '"');
       }
     }

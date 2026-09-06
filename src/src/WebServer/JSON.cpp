@@ -618,22 +618,12 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
     }
 
     {
-      String tmp = data->valName;
-
-      if (tmp.indexOf('"') != -1) {
-        tmp.replace(F("\""), F("\\\""));
-      }
-      KeyValueStruct kv(F("Name"), tmp);
+      KeyValueStruct kv(F("Name"), data->valName);
       kv.setID(data->valName_id);
       writer->write(kv);
     }
     {
-      String tmp = data->value;
-
-      if (tmp.indexOf('"') != -1) {
-        tmp.replace(F("\""), F("\\\""));
-      }
-      KeyValueStruct kv(F("Value"), tmp);
+      KeyValueStruct kv(F("Value"), data->value);
       kv.setID(data->value_id);
       writer->write(kv);
     }
