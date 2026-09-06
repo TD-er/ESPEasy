@@ -69,12 +69,16 @@ void TaskValuesWriterHelper::setAttribute(const __FlashStringHelper *attr) { att
 void TaskValuesWriterHelper::write()
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
+#ifdef WEBSERVER_JSON
 
   if (event->kvWriter) {
     handle_json_stream_task_value_data(this);
   } else {
     pluginWebformShowValue();
   }
+#else // ifdef WEBSERVER_JSON
+  pluginWebformShowValue();
+#endif // ifdef WEBSERVER_JSON
 }
 
 void TaskValuesWriterHelper::writeTaskValues()
@@ -215,11 +219,12 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
   }
 
 #if FEATURE_STRING_VARIABLES
+
   if (hasPresentation) { value = presentation; }
   else if (!uom.isEmpty()) {
     value += concat(' ', uom);
   }
-#endif
+#endif // if FEATURE_STRING_VARIABLES
 
   String valName_tmp(valName);
 
