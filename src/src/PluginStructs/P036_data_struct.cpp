@@ -2550,11 +2550,12 @@ void P036_data_struct::CreateScrollingPageLine(tScrollingPageLines *ScrollingPag
 # if P036_FEATURE_DISPLAY_PREVIEW
 bool P036_data_struct::web_show_values(struct EventStruct *event) {
   TaskValuesWriterHelper data(event);
-  for (uint8_t i = 0; i < ScrollingPages.linesPerFrameDef; ++i) {
-    const bool isLast = i == (ScrollingPages.linesPerFrameDef - 1);
+  // Iterate over all lines so we can be sure the divs are added.
+  const uint8_t nrLines = ScrollingPages.linesPerFrameDef;
+  for (uint8_t i = 0; i < nrLines; ++i) {
+    const bool isLast = i == (nrLines - 1);
     data.setMonoSpaced();
-    data.setAttribute(F("style='font-size:75%;'"));
-    data.writeCustom(i, currentLines[i], EMPTY_STRING, isLast);
+    data.writeCustom(i, currentLines[i], EMPTY_STRING, F("style='font-size:75%;'"), isLast);
   }
   return true; // Don't show anything else
 }

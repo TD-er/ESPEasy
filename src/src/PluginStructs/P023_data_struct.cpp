@@ -331,22 +331,13 @@ void P023_data_struct::setCurrentText(const String& string, int X, int Y) {
 }
 
 bool P023_data_struct::web_show_values(struct EventStruct *event) {
-  uint8_t maxLine = P23_Nlines;
-
-  for (; maxLine > 0; --maxLine) { // Don't show trailing empty lines
-    String tmp = currentLines[maxLine - 1];
-    tmp.trim();
-
-    if (!tmp.isEmpty()) { break; }
-  }
-
   TaskValuesWriterHelper data(event);
-
-  for (uint8_t i = 0; i < maxLine; ++i) {
-    const bool isLast = i == (maxLine - 1);
+  // Iterate over all lines so we can be sure the divs are added.
+  constexpr uint8_t nrLines = NR_ELEMENTS(currentLines);
+  for (uint8_t i = 0; i < nrLines; ++i) {
+    const bool isLast = i == (nrLines - 1);
     data.setMonoSpaced();
-    data.setAttribute(F("style='font-size:75%;'"));
-    data.writeCustom(i, currentLines[i], EMPTY_STRING, isLast);
+    data.writeCustom(i, currentLines[i], EMPTY_STRING, F("style='font-size:75%;'"), isLast);
   }
   return true; // Don't show anything else
 }

@@ -43,6 +43,11 @@ void TaskValuesWriterHelper::clear()
   _isLast                      = false;
 }
 
+bool TaskValuesWriterHelper::isEmpty() const
+{
+    return valName.isEmpty() && value.isEmpty();
+}
+
 void TaskValuesWriterHelper::setID(uint8_t varNr)
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
@@ -64,8 +69,6 @@ void TaskValuesWriterHelper::setID(uint8_t varNr)
 #endif // if FEATURE_STRING_VARIABLES
 }
 
-void TaskValuesWriterHelper::setAttribute(const __FlashStringHelper *attr) { attribute = attr; }
-
 void TaskValuesWriterHelper::write()
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
@@ -79,6 +82,7 @@ void TaskValuesWriterHelper::write()
 #else // ifdef WEBSERVER_JSON
   pluginWebformShowValue();
 #endif // ifdef WEBSERVER_JSON
+  clear();
 }
 
 void TaskValuesWriterHelper::writeTaskValues()
@@ -98,10 +102,20 @@ void TaskValuesWriterHelper::writeTaskValues()
 
 void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const __FlashStringHelper *label, const String& val, bool isLast)
 {
-  writeCustom(varNr, String(label), val, isLast);
+  writeCustom(varNr, String(label), val, EMPTY_STRING, isLast);
 }
 
 void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const String& label, const String& val, bool isLast)
+{
+    writeCustom(varNr, label, val, EMPTY_STRING, isLast);
+}
+
+void TaskValuesWriterHelper::writeCustom(
+    uint8_t       varNr,
+                   const String& label,
+                   const String& val,
+                   const String& attr,
+                   bool          isLast)
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
 
@@ -111,10 +125,10 @@ void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const String& label, con
     writeDerivedTaskValues();
 #endif
   }
-  clear();
   _isLast = isLast;
   valName = label;
   value   = val;
+  attribute = attr;
   setID(varNr);
   write();
 }
@@ -150,7 +164,7 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
 
     while (it != customStringVar.end()) {
       if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
-        clear();
+//        clear();
         valName = it->first.substring(search.length(), it->first.indexOf('-'));
         String vType;
         const String vname2 = getDerivedValueNameUomAndVType(taskName, valName, uom, vType);
@@ -211,35 +225,33 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
 
-  if ((valueNumber == 0) && _monoSpaced) {                                        addHtml(F("<pre>")); } // To keep spaces etc. in the shown
-                                                                                                         // output
+  if ((valueNumber == 0) && _monoSpaced) {
+    addHtml(F("<pre>"));  // To keep spaces etc. in the shown output
+  }
 
   if (valueNumber > 0) {
     addHtmlDiv(F("div_br"));
   }
+  String value_tmp(_monoSpaced ? value : stripQuotes(value));
 
 #if FEATURE_STRING_VARIABLES
 
-  if (hasPresentation) { value = presentation; }
+  if (hasPresentation) { value_tmp = presentation; }
   else if (!uom.isEmpty()) {
-    value += concat(' ', uom);
+    value_tmp += concat(' ', uom);
   }
 #endif // if FEATURE_STRING_VARIABLES
 
-  String valName_tmp(valName);
+  addHtmlDiv(F("div_l"), valName, valName_id, attribute);
 
-  if (!_monoSpaced && !valName_tmp.endsWith(F(":"))) {
-    valName_tmp += ':';
-  }
-  addHtmlDiv(F("div_l"), valName_tmp, valName_id, attribute);
-
-  if (!value.isEmpty()) {
-    addHtmlDiv(F("div_r"), value, value_id);
+  if (!value_tmp.isEmpty()) {
+    addHtmlDiv(F("div_r"), value_tmp, value_id);
   }
 
   if (_isLast && _monoSpaced) {
     addHtml(F("</pre>")); // To keep spaces etc. in the shown output
     _monoSpaced = false;
+    _isLast = false;
   }
 }
 
@@ -252,7 +264,7 @@ bool TaskValuesWriterHelper::initRegularTaskValue(uint8_t varNr)
   valueNumber = varNr;
 
   // Make sure we can re-use the same struct for multiple task values
-  clear();
+  clear();  // TODO TD-er: Still needed, now we call clear() at the end of write() ?
 
   // Need to produce the 'regular' task values
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE

@@ -361,3 +361,8 @@ bool ValueStruct::isEmpty() const
   }
   return false;
 }
+
+void ValueStruct::clear()
+{
+  this->operator=(ValueStruct());
+}

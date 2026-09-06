@@ -377,10 +377,12 @@ boolean Plugin_126(uint8_t function, struct EventStruct *event, String& string)
           label += (P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);          // 4 = nr of bytes in an uint32_t.
 
           if ((P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
-            const String value = wrapWithQuotes(P126_formatValue(
-              UserVar.getUint32(event->TaskIndex, varNr),
-              event,
-              true));
+            const String value = wrap_String(
+              P126_formatValue(
+                UserVar.getUint32(event->TaskIndex, varNr),
+                event,
+                true), 
+              '"');
             
             string += value;
             TaskValuesWriterHelper data(event);

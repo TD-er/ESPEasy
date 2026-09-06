@@ -14,11 +14,9 @@ struct TaskValuesWriterHelper {
 
   void clear();
 
+  bool isEmpty() const;
+
   void setID(uint8_t varNr);
-
-  void setAttribute(const __FlashStringHelper *attr);
-
-  void setAttribute(const String& attr) { attribute = attr; }
 
   void setWriteRegularTaskValuesFirst() { _writeRegularTaskValuesFirst = true; }
 
@@ -37,6 +35,14 @@ struct TaskValuesWriterHelper {
                    const String& label,
                    const String& val,
                    bool          isLast = false);
+
+  void writeCustom(uint8_t       varNr,
+                   const String& label,
+                   const String& val,
+                   const String& attr,
+                   bool          isLast = false);
+
+
 
 private:
 

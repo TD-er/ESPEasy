@@ -88,6 +88,8 @@ public:
 
   bool         isEmpty() const;
 
+  void         clear();
+
   bool         isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
 
 private:

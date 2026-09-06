@@ -469,20 +469,19 @@ void handle_json()
               uint32_t ttl_json = 60; // Default value
 
               // For simplicity, do the optional values first.
-              const uint8_t valueCount = getValueCountForTask(TaskIndex);
-
-              if (valueCount != 0) {
-                if (Settings.TaskDeviceEnabled[TaskIndex]) {
-                  if (taskInterval == 0) {
-                    ttl_json = 1;
-                  } else {
-                    ttl_json = taskInterval;
-                  }
-
-                  if (ttl_json < lowest_ttl_json) {
-                    lowest_ttl_json = ttl_json;
-                  }
+              if (Settings.TaskDeviceEnabled[TaskIndex]) {
+                if (taskInterval == 0) {
+                  ttl_json = 1;
+                } else {
+                  ttl_json = taskInterval;
                 }
+
+                if (ttl_json < lowest_ttl_json) {
+                  lowest_ttl_json = ttl_json;
+                }
+              }
+              {
+                // Need to have this taskValueWriter in a scope, so it will be destructed and thus close the JSON array
                 auto taskValueWriter = taskWriter->createChildArray(F("TaskValues"));
 
                 if (taskValueWriter) {
@@ -605,7 +604,10 @@ void handle_json()
 
 void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
 {
-  if (!data || !data->event || !data->event->kvWriter) { return; }
+  if (!data || 
+      !data->event || 
+      !data->event->kvWriter ||
+      data->isEmpty()) { return; }
 
   auto writer = data->event->kvWriter->createChild();
 
@@ -617,13 +619,17 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
       nrDecimals = 255;
     }
 
+    const KeyValueStruct::Format format = data->_monoSpaced 
+      ? KeyValueStruct::Format::PreFormatted
+      : KeyValueStruct::Format::Default;
+
     {
-      KeyValueStruct kv(F("Name"), data->valName);
+      KeyValueStruct kv(F("Name"), data->valName, format);
       kv.setID(data->valName_id);
       writer->write(kv);
     }
     {
-      KeyValueStruct kv(F("Value"), data->value);
+      KeyValueStruct kv(F("Value"), data->value, format);
       kv.setID(data->value_id);
       writer->write(kv);
     }
