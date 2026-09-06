@@ -10,27 +10,41 @@
 // The call to PLUGIN_WEBFORM_SHOW_VALUES should only return success = true when no regular values should be displayed
 // Note that the varNr of the custom values should not conflict with the existing variable numbers (e.g. start at VARS_PER_TASK)
 struct TaskValuesWriterHelper {
+
+  enum class ID_type {
+    ValueName,
+    Value,
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    UoM,
+#endif
+  #if FEATURE_STRING_VARIABLES
+    Presentation
+#endif
+
+  };
+
+
   TaskValuesWriterHelper(struct EventStruct *event);
 
-  void clear();
+  void   clear();
 
-  bool isEmpty() const;
+  bool   isEmpty() const;
 
-  void setID(uint8_t varNr);
+  String format_ID(ID_type id) const;
 
-  void setWriteRegularTaskValuesFirst() { _writeRegularTaskValuesFirst = true; }
+  void   setWriteRegularTaskValuesFirst() { _writeRegularTaskValuesFirst = true; }
 
-  void setMonoSpaced()                  { _monoSpaced = true; }
+  void   setMonoSpaced()                  { _monoSpaced = true; }
 
 
-  void write();
+  void   write();
 
-  void writeTaskValues();
+  void   writeTaskValues();
 
-  void writeCustom(uint8_t                    varNr,
-                   const __FlashStringHelper *label,
-                   const String             & val,
-                   bool                       isLast = false);
+  void   writeCustom(uint8_t                    varNr,
+                     const __FlashStringHelper *label,
+                     const String             & val,
+                     bool                       isLast = false);
   void writeCustom(uint8_t       varNr,
                    const String& label,
                    const String& val,
@@ -41,8 +55,6 @@ struct TaskValuesWriterHelper {
                    const String& val,
                    const String& attr,
                    bool          isLast = false);
-
-
 
 private:
 
@@ -58,12 +70,12 @@ private:
 public:
 
   EventStruct * const event = nullptr;
-  String              valName, valName_id, value, value_id, attribute;
+  String              valName, value, attribute;
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  String uom, uom_id;
+  String uom;
 #endif
 #if FEATURE_STRING_VARIABLES
-  String presentation, presentation_id;
+  String presentation;
   bool   hasPresentation = false;
 #endif // if FEATURE_STRING_VARIABLES
 

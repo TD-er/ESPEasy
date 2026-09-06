@@ -27,9 +27,7 @@ TaskValuesWriterHelper::TaskValuesWriterHelper(struct EventStruct *e)
 void TaskValuesWriterHelper::clear()
 {
   valName.clear();
-  valName_id.clear();
   value.clear();
-  value_id.clear();
   attribute.clear();
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   uom.clear();
@@ -45,28 +43,33 @@ void TaskValuesWriterHelper::clear()
 
 bool TaskValuesWriterHelper::isEmpty() const
 {
-    return valName.isEmpty() && value.isEmpty();
+  return valName.isEmpty() && value.isEmpty();
 }
 
-void TaskValuesWriterHelper::setID(uint8_t varNr)
+String TaskValuesWriterHelper::format_ID(ID_type id) const
 {
-  if (!validDeviceIndex(deviceIndex)) { return; }
-  valueNumber = varNr;
-  const String id_postfix = strformat(F("%u_%u"), event->TaskIndex, varNr);
-  valName_id = concat(F("valuename_"), id_postfix);
-  value_id   = concat(F("value_"), id_postfix);
-#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  if (!validDeviceIndex(deviceIndex)) { return EMPTY_STRING; }
+  const __FlashStringHelper *id_str = F("");
 
-  if (!uom.isEmpty()) {
-    uom_id = concat(F("uom_"), id_postfix);
-  }
+  switch (id)
+  {
+    case ID_type::ValueName: id_str = F("valuename_");
+      break;
+    case ID_type::Value: id_str = F("value_");
+      break;
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+    case ID_type::UoM: id_str = F("uom_");
+      break;
 #endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
 #if FEATURE_STRING_VARIABLES
-
-  if (hasPresentation) {
-    presentation_id = concat(F("pres_"), id_postfix);
-  }
+    case ID_type::Presentation: id_str = F("pres_");
+      break;
 #endif // if FEATURE_STRING_VARIABLES
+    default:
+      return EMPTY_STRING;
+  }
+  const String id_postfix = strformat(F("%u_%u"), event->TaskIndex, valueNumber);
+  return concat(id_str, id_postfix);
 }
 
 void TaskValuesWriterHelper::write()
@@ -107,15 +110,15 @@ void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const __FlashStringHelpe
 
 void TaskValuesWriterHelper::writeCustom(uint8_t varNr, const String& label, const String& val, bool isLast)
 {
-    writeCustom(varNr, label, val, EMPTY_STRING, isLast);
+  writeCustom(varNr, label, val, EMPTY_STRING, isLast);
 }
 
 void TaskValuesWriterHelper::writeCustom(
-    uint8_t       varNr,
-                   const String& label,
-                   const String& val,
-                   const String& attr,
-                   bool          isLast)
+  uint8_t       varNr,
+  const String& label,
+  const String& val,
+  const String& attr,
+  bool          isLast)
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
 
@@ -125,11 +128,11 @@ void TaskValuesWriterHelper::writeCustom(
     writeDerivedTaskValues();
 #endif
   }
-  _isLast = isLast;
-  valName = label;
-  value   = val;
+  valueNumber = varNr;
+  _isLast   = isLast;
+  valName   = label;
+  value     = val;
   attribute = attr;
-  setID(varNr);
   write();
 }
 
@@ -164,7 +167,7 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
 
     while (it != customStringVar.end()) {
       if (it->first.startsWith(search) && it->first.endsWith(postfix)) {
-//        clear();
+        //        clear();
         valName = it->first.substring(search.length(), it->first.indexOf('-'));
         String vType;
         const String vname2 = getDerivedValueNameUomAndVType(taskName, valName, uom, vType);
@@ -174,6 +177,7 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
         }
 
         if (!it->second.isEmpty()) {
+          valueNumber = varNr;
           value = it->second;
 
           // FIXME TD-er: Why these differences between JSON and Web?
@@ -204,7 +208,6 @@ void TaskValuesWriterHelper::writeDerivedTaskValues()
             }
           }
 
-          setID(varNr);
           write();
           ++varNr;
         }
@@ -226,7 +229,7 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
   if (!validDeviceIndex(deviceIndex)) { return; }
 
   if ((valueNumber == 0) && _monoSpaced) {
-    addHtml(F("<pre>"));  // To keep spaces etc. in the shown output
+    addHtml(F("<pre>")); // To keep spaces etc. in the shown output
   }
 
   if (valueNumber > 0) {
@@ -242,16 +245,13 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
   }
 #endif // if FEATURE_STRING_VARIABLES
 
-  addHtmlDiv(F("div_l"), valName, valName_id, attribute);
-
-  if (!value_tmp.isEmpty()) {
-    addHtmlDiv(F("div_r"), value_tmp, value_id);
-  }
+  addHtmlDiv(F("div_l"), valName, format_ID(ID_type::ValueName), attribute);
+  addHtmlDiv(F("div_r"), value_tmp, format_ID(ID_type::Value));
 
   if (_isLast && _monoSpaced) {
     addHtml(F("</pre>")); // To keep spaces etc. in the shown output
     _monoSpaced = false;
-    _isLast = false;
+    _isLast     = false;
   }
 }
 
@@ -264,7 +264,7 @@ bool TaskValuesWriterHelper::initRegularTaskValue(uint8_t varNr)
   valueNumber = varNr;
 
   // Make sure we can re-use the same struct for multiple task values
-  clear();  // TODO TD-er: Still needed, now we call clear() at the end of write() ?
+  clear(); // TODO TD-er: Still needed, now we call clear() at the end of write() ?
 
   // Need to produce the 'regular' task values
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
@@ -291,7 +291,6 @@ bool TaskValuesWriterHelper::initRegularTaskValue(uint8_t varNr)
   }
   #endif // if FEATURE_STRING_VARIABLES
   valName = Cache.getTaskDeviceValueName(event->TaskIndex, varNr);
-  setID(varNr);
 
   return true;
 }

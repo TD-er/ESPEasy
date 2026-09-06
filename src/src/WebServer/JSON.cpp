@@ -625,12 +625,12 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
 
     {
       KeyValueStruct kv(F("Name"), data->valName, format);
-      kv.setID(data->valName_id);
+      kv.setID(data->format_ID(TaskValuesWriterHelper::ID_type::ValueName));
       writer->write(kv);
     }
     {
       KeyValueStruct kv(F("Value"), data->value, format);
-      kv.setID(data->value_id);
+      kv.setID(data->format_ID(TaskValuesWriterHelper::ID_type::Value));
       writer->write(kv);
     }
 
@@ -638,16 +638,16 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
     writer->write({ F("NrDecimals"),  nrDecimals });
 # if FEATURE_STRING_VARIABLES
 
-    if (!data->presentation.isEmpty()) {
+    if (!data->hasPresentation) {
       KeyValueStruct kv(F("Presentation"), data->presentation);
-      kv.setID(data->presentation_id);
+      kv.setID(data->format_ID(TaskValuesWriterHelper::ID_type::Presentation));
       writer->write(kv);
     }
 # endif // if FEATURE_STRING_VARIABLES
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     if (!data->uom.isEmpty()) {
       KeyValueStruct kv(F("UoM"), data->uom);
-      kv.setID(data->uom_id);
+      kv.setID(data->format_ID(TaskValuesWriterHelper::ID_type::UoM));
       writer->write(kv);
     }
 #endif
