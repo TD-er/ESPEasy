@@ -214,10 +214,12 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
     addHtmlDiv(F("div_br"));
   }
 
+#if FEATURE_STRING_VARIABLES
   if (hasPresentation) { value = presentation; }
   else if (!uom.isEmpty()) {
     value += concat(' ', uom);
   }
+#endif
 
   String valName_tmp(valName);
 

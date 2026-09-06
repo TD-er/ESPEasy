@@ -638,12 +638,13 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
       writer->write(kv);
     }
 # endif // if FEATURE_STRING_VARIABLES
-
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
     if (!data->uom.isEmpty()) {
       KeyValueStruct kv(F("UoM"), data->uom);
       kv.setID(data->uom_id);
       writer->write(kv);
     }
+#endif
   }
 }
 
