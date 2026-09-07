@@ -1,7 +1,9 @@
 #include "../DataStructs/ValueStruct.h"
 
+#include "../Helpers/Numerical.h"
 #include "../Helpers/Memory.h"
 #include "../Helpers/PrintToString.h"
+#include "../Helpers/StringConverter.h"
 #include "../Helpers/StringConverter_Numerical.h"
 
 #define VALUE_STRUCT_SSO_FIRST_CHAR_INDEX  1
@@ -13,13 +15,10 @@
 // ********************************************************************************
 ValueStruct::~ValueStruct()
 {
-  const auto vtype = static_cast<ValueStruct::ValueType>(_valueType);
-
-  if (!_isSSO && (vtype == ValueStruct::ValueType::String))
-  {
-    if (str_val != nullptr) {
-      free(str_val);
-    }
+  if (!_isSSO &&
+      (static_cast<ValueStruct::ValueType>(_valueType) == ValueStruct::ValueType::String)
+      && (str_val != nullptr)) {
+    free(str_val);
   }
 }
 
@@ -29,10 +28,47 @@ ValueStruct::ValueStruct(ValueStruct&& rhs)
   memset(rhs.bytes_all, 0, sizeof(bytes_all));
 }
 
+void ValueStruct::setPreferredFormat(ValueStruct::PreferredFormat format)
+{
+  const auto vtype = getValueType();
+
+  if ((vtype == ValueStruct::ValueType::Int) ||
+      (vtype == ValueStruct::ValueType::UInt))
+  {
+    _preferredFormat = (uint64_t)format;
+  }
+}
+
+void ValueStruct::clear() {
+  if (!_isSSO
+      && (getValueType() == ValueStruct::ValueType::String)
+      && (str_val != nullptr)) {
+    free(str_val);
+  }
+  memset(bytes_all, 0, sizeof(bytes_all));
+}
+
 ValueStruct& ValueStruct::operator=(ValueStruct&& rhs)
 {
+  clear();
   memcpy(bytes_all, rhs.bytes_all, sizeof(bytes_all));
+
+  // Make sure rhs will not free allocated string
   memset(rhs.bytes_all, 0, sizeof(bytes_all));
+  return *this;
+}
+
+ValueStruct& ValueStruct::deepCopy(const ValueStruct& rhs)
+{
+  if (!rhs._isSSO && (rhs.getValueType() == ValueStruct::ValueType::String))
+  {
+    this->operator=(ValueStruct(rhs.toString()));
+  } else {
+    clear();
+
+    // RHS does not have anything heap-allocated, so can make literal copy
+    memcpy(bytes_all, rhs.bytes_all, sizeof(bytes_all));
+  }
   return *this;
 }
 
@@ -46,6 +82,8 @@ ValueStruct::ValueStruct(const bool& val) :
 ValueStruct::ValueStruct(int val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -54,6 +92,8 @@ ValueStruct::ValueStruct(int val) :
 ValueStruct::ValueStruct(int32_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -62,6 +102,8 @@ ValueStruct::ValueStruct(int32_t val) :
 ValueStruct::ValueStruct(uint32_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -70,6 +112,8 @@ ValueStruct::ValueStruct(uint32_t val) :
 ValueStruct::ValueStruct(size_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -78,6 +122,8 @@ ValueStruct::ValueStruct(size_t val) :
 ValueStruct::ValueStruct(const uint64_t& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -85,6 +131,8 @@ ValueStruct::ValueStruct(const uint64_t& val) :
 ValueStruct::ValueStruct(const int64_t& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
+  _preferredFormat((uint64_t)PreferredFormat::Default),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -196,6 +244,109 @@ ValueStruct::ValueStruct(const __FlashStringHelper *val) :
   str_val((void *)(val))
 {}
 
+ValueStruct::ValueType ValueStruct::fromString(const __FlashStringHelper *val)
+{
+  if (fromString(String(val)) == ValueStruct::ValueType::String)
+  {
+    // We can store it as a flash string, which doesn't need memory allocation
+    this->operator=(ValueStruct(val));
+  }
+  return getValueType();
+}
+
+ValueStruct::ValueType ValueStruct::fromString(const String& val)
+{
+  clear();
+
+  String numStr;
+  NumericalType detectedType = NumericalType::Not_a_number;
+  bool negativeValue{};
+
+  if (!val.isEmpty())
+  {
+    String trimmedVal(val);
+    trimmedVal.trim();
+
+    const bool b_true  = trimmedVal.equalsIgnoreCase(F("true"));
+    const bool b_false = trimmedVal.equalsIgnoreCase(F("false"));
+
+    if (b_true || b_false) {
+      this->operator=(ValueStruct(b_true));
+      return ValueStruct::ValueType::Bool;
+    }
+
+    numStr = getNumerical(trimmedVal, NumericalType::FloatingPoint, detectedType);
+    numStr.trim();
+
+    if (!numStr.isEmpty() && (numStr[0] == '-')) {
+      negativeValue = true;
+    }
+  }
+
+  switch (detectedType)
+  {
+    case NumericalType::Not_a_number:
+      break;
+    case NumericalType::FloatingPoint:
+    {
+      ESPEASY_RULES_FLOAT_TYPE val_f{};
+      int nrDec{};
+
+      if (validDoubleFromString(numStr, val_f, nrDec) || (nrDec < 0))
+      {
+        this->operator=(ValueStruct(val_f, nrDec));
+        return ValueStruct::ValueType::Float;
+      }
+      break;
+    }
+    default:
+    {
+      if (negativeValue) {
+        int64_t result{};
+
+        if (validInt64FromString(numStr, result))
+        {
+          if (std::numeric_limits<int32_t>::min() < result) {
+            this->operator=(ValueStruct(static_cast<int32_t>(result)));
+          }
+          else {
+            this->operator=(ValueStruct(result));
+          }
+        }
+      } else {
+        uint64_t result{};
+
+        if (validUInt64FromString(numStr, result))
+        {
+          if (std::numeric_limits<uint32_t>::max() > result) {
+            this->operator=(ValueStruct(static_cast<uint32_t>(result)));
+          }
+          else {
+            this->operator=(ValueStruct(result));
+          }
+        }
+      }
+
+      if (isSet()) {
+        PreferredFormat format(PreferredFormat::Default);
+
+        if (detectedType == NumericalType::BinaryUint) { format = PreferredFormat::Bin; }
+        else if (detectedType == NumericalType::HexadecimalUInt) { format = PreferredFormat::Hex; }
+
+        setPreferredFormat(format);
+      }
+      break;
+    }
+  }
+
+  if (!isSet()) {
+    // Just store it as a string type
+    this->operator=(ValueStruct(val));
+  }
+
+  return getValueType();
+}
+
 String ValueStruct::toString() const
 {
   ValueType valueType;
@@ -214,7 +365,7 @@ String ValueStruct::toString(ValueType& valueType) const
 
 int64_t ValueStruct::toInt() const
 {
-  switch(getValueType())
+  switch (getValueType())
   {
     case ValueStruct::ValueType::Bool:
     {
@@ -243,7 +394,7 @@ int64_t ValueStruct::toInt() const
 
 double ValueStruct::toFloat() const
 {
-  switch(getValueType())
+  switch (getValueType())
   {
     case ValueStruct::ValueType::Bool:
     {
@@ -326,16 +477,26 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     }
     case ValueStruct::ValueType::Int:
     {
-      if (_size == 8) {
-        return out.print(ll2String(i64_val));
+      if ((_size > 32) || _minNrDigits) {
+        return out.print(ll2String(i64_val, DEC, _minNrDigits));
       }
       auto v = static_cast<int32_t>(i64_val);
       return out.print(v);
     }
     case ValueStruct::ValueType::UInt:
     {
-      if (_size == 8) {
-        return out.print(ull2String(u64_val));
+      const auto format = getPreferredFormat();
+
+      if (format == PreferredFormat::Bin) {
+        return out.print(concat(F("0b"), ull2String(u64_val, BIN, _minNrDigits)));
+      }
+
+      if (format == PreferredFormat::Hex) {
+        return out.print(concat(F("0x"), ull2String(u64_val, HEX, _minNrDigits)));
+      }
+
+      if ((_size > 32) || _minNrDigits) {
+        return out.print(ull2String(u64_val, DEC, _minNrDigits));
       }
       auto v = static_cast<uint32_t>(u64_val);
       return out.print(v);
@@ -360,9 +521,4 @@ bool ValueStruct::isEmpty() const
     default: break;
   }
   return false;
-}
-
-void ValueStruct::clear()
-{
-  this->operator=(ValueStruct());
 }

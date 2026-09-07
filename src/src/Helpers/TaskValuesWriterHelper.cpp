@@ -117,7 +117,7 @@ void TaskValuesWriterHelper::writeCustom(
   uint8_t       varNr,
   const String& label,
   const String& val,
-  const String& attr,
+  ValueStruct&& attr,
   bool          isLast)
 {
   if (!validDeviceIndex(deviceIndex)) { return; }
@@ -132,7 +132,7 @@ void TaskValuesWriterHelper::writeCustom(
   _isLast     = isLast;
   valName     = label;
   value       = val;
-  attribute   = attr;
+  attribute   = std::move(attr);
   write();
 }
 
@@ -245,7 +245,7 @@ void TaskValuesWriterHelper::pluginWebformShowValue()
   }
 #endif // if FEATURE_STRING_VARIABLES
 
-  addHtmlDiv(F("div_l"), valName, format_ID(ID_type::ValueName), attribute);
+  addHtmlDiv(F("div_l"), valName, format_ID(ID_type::ValueName), attribute.toString());
 
   if (!value_tmp.isEmpty() || !_preformatted) {
     addHtmlDiv(F("div_r"), value_tmp, format_ID(ID_type::Value));

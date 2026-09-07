@@ -181,6 +181,8 @@ bool  doubleToValidString(String& str,
     str = F("Inf");
     return false;
   }
+  
+  if (decimalPlaces == 255) decimalPlaces = 0;
 #if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
 
   // We use some trick here to prevent rounding errors 

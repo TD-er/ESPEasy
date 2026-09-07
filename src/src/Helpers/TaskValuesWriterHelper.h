@@ -2,6 +2,7 @@
 
 #include "../../ESPEasy_common.h"
 
+#include "../DataStructs/ValueStruct.h"
 #include "../DataTypes/DeviceIndex.h"
 
 // Helper function to create formatted custom values for display in the devices overview page.
@@ -53,7 +54,7 @@ struct TaskValuesWriterHelper {
   void writeCustom(uint8_t       varNr,
                    const String& label,
                    const String& val,
-                   const String& attr,
+                   ValueStruct&& attr,
                    bool          isLast = false);
 
 private:
@@ -70,7 +71,8 @@ private:
 public:
 
   EventStruct * const event = nullptr;
-  String              valName, value, attribute;
+  String              valName, value;
+  ValueStruct attribute;
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
   String uom;
 #endif

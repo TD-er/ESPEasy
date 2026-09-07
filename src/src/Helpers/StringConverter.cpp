@@ -349,14 +349,14 @@ void replaceUnicodeByChar(String& line, char replChar) {
 
 void padToMinimumLength(String& line, uint32_t minimumLength, char padChar)
 {
-  if (line.length() >= minimumLength) return;
+  if (minimumLength == 0 || line.length() >= minimumLength) return;
   line.reserve(minimumLength);
   while (line.length() < minimumLength) line += padChar;
 }
 
 void prefixToMinimumLength(String& line, uint32_t minimumLength, char prefixChar)
 {
-  if (line.length() >= minimumLength) return;
+  if (minimumLength == 0 || line.length() >= minimumLength) return;
  
   String prefix;
   padToMinimumLength(prefix, minimumLength - line.length(), prefixChar);

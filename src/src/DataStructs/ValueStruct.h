@@ -24,6 +24,14 @@ public:
 
   };
 
+  enum class PreferredFormat : uint8_t {
+    Default = 0,
+    Dec,
+    Bin,
+    Hex
+
+  };
+
   ValueStruct() :
     _isSSO(0),
     _valueType((uint64_t)ValueStruct::ValueType::Unset),
@@ -73,24 +81,47 @@ public:
     return static_cast<ValueStruct::ValueType>(_valueType);
   }
 
+  ValueStruct::PreferredFormat getPreferredFormat() const
+  {
+    return static_cast<ValueStruct::PreferredFormat>(_preferredFormat);
+  }
+
+  void         setPreferredFormat(ValueStruct::PreferredFormat format);
+
+  void         setMinNrDigits(uint8_t minNrDigits) { _minNrDigits = (uint64_t)minNrDigits; }
+
   ValueStruct& operator=(ValueStruct&& rhs);
   ValueStruct& operator=(const ValueStruct& rhs) = delete;
 
-  String       toString() const;
+  // We really try to enforce moving the ValueStruct, but when needed a deepcopy is possible
+  ValueStruct& deepCopy(const ValueStruct& rhs);
 
-  String       toString(ValueType& valueType) const;
+  operator bool() const {
+    return getValueType() != ValueStruct::ValueType::Unset;
+  }
 
-  int64_t      toInt() const;
+  // Try to interpret the given string and store the value as compact as possible
+  // If the given string is a numerical, try to detect:
+  //  - preferred notation (Hex/Dec/Bin)
+  //  - number of decimals
+  ValueStruct::ValueType fromString(const __FlashStringHelper *val);
+  ValueStruct::ValueType fromString(const String& val);
 
-  double       toFloat() const;
+  String                 toString() const;
 
-  size_t       print(Print& out) const;
+  String                 toString(ValueType& valueType) const;
 
-  bool         isEmpty() const;
+  int64_t                toInt() const;
 
-  void         clear();
+  double                 toFloat() const;
 
-  bool         isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
+  size_t                 print(Print& out) const;
+
+  bool                   isEmpty() const;
+
+  void                   clear();
+
+  bool                   isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
 
 private:
 
@@ -101,11 +132,12 @@ private:
     struct {
       uint64_t _isSSO             : 1;
       uint64_t _trimTrailingZeros : 1;
-      uint64_t _valueType         : 6;
+      uint64_t _valueType         : 4;
+      uint64_t _preferredFormat   : 2;
       uint64_t _nrDecimals        : 8;
-      uint64_t _size              : 16;
-
-      uint64_t unused : 32;
+      uint64_t _minNrDigits       : 8;  // For printing ints with leading zeroes
+      uint64_t _size              : 16; // Length of string or nr of bits
+      uint64_t unused             : 24;
 
       union {
         void    *str_val;

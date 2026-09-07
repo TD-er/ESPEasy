@@ -383,5 +383,5 @@ bool isNumerical(const String& tBuf, NumericalType& detectedType) {
     return result.length() >= tmp.length();
   }
 
-  return result.length() > 0;
+  return false;
 }
