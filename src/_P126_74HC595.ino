@@ -68,19 +68,35 @@ String P126_formatValue(uint32_t value, struct EventStruct *event, bool showSepa
 # endif // ifdef P126_SHOW_VALUES
     HEX;
 
-  const uint8_t digitsPerByte = (base == BIN) ? 8 : 2;
-  const uint8_t minNrDigits = std::min(static_cast<int>(P126_CONFIG_CHIP_COUNT), 4) * digitsPerByte;
-  const char separatorChar = showSeparatorDot ? '.' : '\0';
-  constexpr bool toUpperCase = true;
+  const uint8_t  digitsPerByte = (base == BIN) ? 8 : 2;
+  const uint8_t  minNrDigits   = std::min(static_cast<int>(P126_CONFIG_CHIP_COUNT), 4) * digitsPerByte;
+  const char     separatorChar = showSeparatorDot ? '.' : '\0';
+  constexpr bool toUpperCase   = true;
 
-  return concat(
-    (base == BIN) ? F("0b") : F("0x"),
-    ull2String(
-      value,
-      base, 
-      minNrDigits,
-      separatorChar,
-      toUpperCase));
+  String res;
+
+  if ((P126_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P126_OUTPUT_BOTH) ||
+      (P126_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P126_OUTPUT_DEC_ONLY)) {
+    res = value;
+  }
+
+  if (P126_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P126_OUTPUT_BOTH) {
+    res += ',';
+  }
+
+  if ((P126_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P126_OUTPUT_BOTH) ||
+      (P126_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P126_OUTPUT_HEXBIN)) {
+    res += concat(
+      (base == BIN) ? F("0b") : F("0x"),
+      ull2String(
+        value,
+        base,
+        minNrDigits,
+        separatorChar,
+        toUpperCase));
+  }
+
+  return res;
 }
 
 uint8_t P126_getNrTaskValues(struct EventStruct *event)
@@ -196,13 +212,13 @@ boolean Plugin_126(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_GET_DEVICEVALUECOUNT:
     {
       event->Par1 = P126_getNrTaskValues(event);
-      success = true;
+      success     = true;
       break;
     }
 
     case PLUGIN_GET_DEVICEVTYPE:
     {
-      if (getBasicSensorTypeFromValueCount(P126_getNrTaskValues(event), event->sensorType)) 
+      if (getBasicSensorTypeFromValueCount(P126_getNrTaskValues(event), event->sensorType))
       {
         event->idx = 0;
         success    = true;
@@ -358,52 +374,50 @@ boolean Plugin_126(uint8_t function, struct EventStruct *event, String& string)
 
     # ifdef P126_SHOW_VALUES
     case PLUGIN_WEBFORM_SHOW_VALUES:
-      {
-        const uint16_t endCheck = P126_CONFIG_CHIP_COUNT + (P126_CONFIG_CHIP_COUNT == 255 ? 3 : 4); // 4(.0) = nr of bytes in an uint32_t.
-        const uint16_t maxVar   = P126_getNrTaskValues(event);
+    {
+      const uint16_t endCheck = P126_CONFIG_CHIP_COUNT + (P126_CONFIG_CHIP_COUNT == 255 ? 3 : 4); // 4(.0) = nr of bytes in an uint32_t.
+      const uint16_t maxVar   = P126_getNrTaskValues(event);
 
-        for (uint16_t varNr = 0; varNr < maxVar; ++varNr) {
-          String label;
-          if (P126_CONFIG_FLAGS_GET_VALUES_DISPLAY) {
-            label     = F("Bin");
-          } else {
-            label     = F("Hex");
-          }
-          const char letter = 'A' + varNr;
-          label += strformat(F(" State_%c "), letter);
+      for (uint16_t varNr = 0; varNr < maxVar; ++varNr) {
+        const uint8_t chipCountPerTaskvalue = std::min(static_cast<int>(P126_CONFIG_CHIP_COUNT), 4);
+        const uint8_t highChipIndex         = min(255, P126_CONFIG_SHOW_OFFSET + (4 * varNr) + chipCountPerTaskvalue); // Limited to max 255
+                                                                                                                       // chips
+        const uint8_t lowChipIndex = (P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);                                      // 4 = nr of bytes in
+                                                                                                                       // an uint32_t.
+        const String label = strformat(
+          F("(%d...%d) %s"),
+          highChipIndex,
+          lowChipIndex,
+          Cache.getTaskDeviceValueName(event->TaskIndex, varNr).c_str());
 
-          label += min(255, P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 4);  // Limited to max 255 chips
-          label += '_';
-          label += (P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);          // 4 = nr of bytes in an uint32_t.
+        if ((P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
+          const String value = wrap_String(
+            P126_formatValue(
+              UserVar.getUint32(event->TaskIndex, varNr),
+              event,
+              true),
+            '"');
 
-          if ((P126_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
-            const String value = wrap_String(
-              P126_formatValue(
-                UserVar.getUint32(event->TaskIndex, varNr),
-                event,
-                true), 
-              '"');
-            
-            string += value;
-            TaskValuesWriterHelper data(event);
-            data.writeCustom(varNr, label, value);
-            success = true; // Do not write other taskvalues
-          }
+          string += value;
+          TaskValuesWriterHelper data(event);
+          data.writeCustom(varNr, label, value);
+          success = true; // Do not write other taskvalues
         }
-        success = true; // Don't show the default value data
-        break;
       }
+      success = true;     // Don't show the default value data
+      break;
+    }
     # endif // ifdef P126_SHOW_VALUES
     case PLUGIN_WRITE:
-      {
-        P126_data_struct *P126_data = static_cast<P126_data_struct *>(getPluginTaskData(event->TaskIndex));
+    {
+      P126_data_struct *P126_data = static_cast<P126_data_struct *>(getPluginTaskData(event->TaskIndex));
 
-        if (nullptr != P126_data) {
-          success = P126_data->plugin_write(event, string);
-        }
-
-        break;
+      if (nullptr != P126_data) {
+        success = P126_data->plugin_write(event, string);
       }
+
+      break;
+    }
   }
   return success;
 }

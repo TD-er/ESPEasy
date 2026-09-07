@@ -49,22 +49,38 @@ String P129_formatValue(uint32_t value, struct EventStruct *event, bool showSepa
   const uint8_t base =
 # ifdef P129_SHOW_VALUES
     P129_CONFIG_FLAGS_GET_VALUES_DISPLAY ? BIN :
-# endif // ifdef P126_SHOW_VALUES
+# endif // ifdef P129_SHOW_VALUES
     HEX;
 
-  const uint8_t digitsPerByte = (base == BIN) ? 8 : 2;
-  const uint8_t minNrDigits = std::min(static_cast<int>(P129_CONFIG_CHIP_COUNT), 4) * digitsPerByte;
-  const char separatorChar = showSeparatorDot ? '.' : '\0';
-  constexpr bool toUpperCase = true;
+  const uint8_t  digitsPerByte = (base == BIN) ? 8 : 2;
+  const uint8_t  minNrDigits   = std::min(static_cast<int>(P129_CONFIG_CHIP_COUNT), 4) * digitsPerByte;
+  const char     separatorChar = showSeparatorDot ? '.' : '\0';
+  constexpr bool toUpperCase   = true;
 
-  return concat(
-    (base == BIN) ? F("0b") : F("0x"),
-    ull2String(
-      value,
-      base, 
-      minNrDigits,
-      separatorChar,
-      toUpperCase));
+  String res;
+
+  if ((P129_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P129_OUTPUT_BOTH) ||
+      (P129_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P129_OUTPUT_DEC_ONLY)) {
+    res = value;
+  }
+
+  if (P129_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P129_OUTPUT_BOTH) {
+    res += ',';
+  }
+
+  if ((P129_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P129_OUTPUT_BOTH) ||
+      (P129_CONFIG_FLAGS_GET_OUTPUT_SELECTION == P129_OUTPUT_HEXBIN)) {
+    res += concat(
+      (base == BIN) ? F("0b") : F("0x"),
+      ull2String(
+        value,
+        base,
+        minNrDigits,
+        separatorChar,
+        toUpperCase));
+  }
+
+  return res;
 }
 
 uint8_t P129_getNrTaskValues(struct EventStruct *event)
@@ -73,7 +89,6 @@ uint8_t P129_getNrTaskValues(struct EventStruct *event)
     static_cast<uint8_t>(VARS_PER_TASK),
     static_cast<uint8_t>((P129_CONFIG_CHIP_COUNT + 3) >> 2));
 }
-
 
 boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
 {
@@ -193,13 +208,13 @@ boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
     case PLUGIN_GET_DEVICEVALUECOUNT:
     {
       event->Par1 = P129_getNrTaskValues(event);
-      success = true;
+      success     = true;
       break;
     }
 
     case PLUGIN_GET_DEVICEVTYPE:
     {
-      if (getBasicSensorTypeFromValueCount(P129_getNrTaskValues(event), event->sensorType)) 
+      if (getBasicSensorTypeFromValueCount(P129_getNrTaskValues(event), event->sensorType))
       {
         event->idx = 0;
         success    = true;
@@ -291,9 +306,9 @@ boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
 
             if (loglevelActiveFor(LOG_LEVEL_INFO)) {
               addLog(LOG_LEVEL_INFO, strformat(
-                F("74HC165 Reading from: %d, bits: %s"), 
-                i / 4, 
-                ull2String(bits, BIN, 32, '\0', true).c_str()));
+                       F("74HC165 Reading from: %d, bits: %s"),
+                       i / 4,
+                       ull2String(bits, BIN, 32, '\0', true).c_str()));
             }
             # endif // ifdef P129_DEBUG_LOG
           }
@@ -452,51 +467,50 @@ boolean Plugin_129(uint8_t function, struct EventStruct *event, String& string)
 
     # ifdef P129_SHOW_VALUES
     case PLUGIN_WEBFORM_SHOW_VALUES:
-      {
-        const uint16_t endCheck = P129_CONFIG_CHIP_COUNT + 4; // 4(.0) = nr of bytes in an uint32_t.
-        const uint16_t maxVar   = P129_getNrTaskValues(event);
+    {
+      const uint16_t endCheck = P129_CONFIG_CHIP_COUNT + 4; // 4(.0) = nr of bytes in an uint32_t.
+      const uint16_t maxVar   = P129_getNrTaskValues(event);
 
-        for (uint16_t varNr = 0; varNr < maxVar; ++varNr) {
-          String label;
-          if (P129_CONFIG_FLAGS_GET_VALUES_DISPLAY) {
-            label     = F("Bin");
-          } else {
-            label     = F("Hex");
-          }
-          const char letter = 'A' + varNr;
-          label += strformat(F(" State_%c "), letter);
-          label += min(255, P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 4);  // Limited to max 255 chips
-          label += '_';
-          label += (P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);          // 4 = nr of bytes in an uint32_t.
+      for (uint16_t varNr = 0; varNr < maxVar; ++varNr) {
+        const uint8_t chipCountPerTaskvalue = std::min(static_cast<int>(P129_CONFIG_CHIP_COUNT), 4);
+        const uint8_t highChipIndex         = min(255, P129_CONFIG_SHOW_OFFSET + (4 * varNr) + chipCountPerTaskvalue); // Limited to max 255
+                                                                                                                       // chips
+        const uint8_t lowChipIndex = (P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 1);                                      // 4 = nr of bytes in
+                                                                                                                       // an uint32_t.
+        const String label = strformat(
+          F("(%d...%d) %s"),
+          highChipIndex,
+          lowChipIndex,
+          Cache.getTaskDeviceValueName(event->TaskIndex, varNr).c_str());
 
-          if ((P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
-            const String value = wrap_String(
-              P129_formatValue(
-                UserVar.getUint32(event->TaskIndex, varNr),
-                event,
-                true), 
-              '"');
-            
-            string += value;
-            TaskValuesWriterHelper data(event);
-            data.writeCustom(varNr, label, value);
-            success = true; // Do not write other taskvalues
-          }
+        if ((P129_CONFIG_SHOW_OFFSET + (4 * varNr) + 4) <= endCheck) { // Only show if still in range
+          const String value = wrap_String(
+            P129_formatValue(
+              UserVar.getUint32(event->TaskIndex, varNr),
+              event,
+              true),
+            '"');
+
+          string += value;
+          TaskValuesWriterHelper data(event);
+          data.writeCustom(varNr, label, value);
+          success = true; // Do not write other taskvalues
         }
-        success = true; // Don't show the default value data
-        break;
       }
+      success = true;     // Don't show the default value data
+      break;
+    }
     # endif // ifdef P129_SHOW_VALUES
     case PLUGIN_WRITE:
-      {
-        P129_data_struct *P129_data = static_cast<P129_data_struct *>(getPluginTaskData(event->TaskIndex));
+    {
+      P129_data_struct *P129_data = static_cast<P129_data_struct *>(getPluginTaskData(event->TaskIndex));
 
-        if (nullptr != P129_data) {
-          success = P129_data->plugin_write(event, string);
-        }
-
-        break;
+      if (nullptr != P129_data) {
+        success = P129_data->plugin_write(event, string);
       }
+
+      break;
+    }
   }
   return success;
 }
