@@ -28,6 +28,25 @@ ValueStruct::ValueStruct(ValueStruct&& rhs)
   memset(rhs.bytes_all, 0, sizeof(bytes_all));
 }
 
+ValueStruct ValueStruct::makeHexFormatted(uint64_t val, uint8_t minNrDigits)
+{
+  ValueStruct res(val);
+
+  res.setPreferredFormat(PreferredFormat::Hex);
+  res.setMinNrDigits(minNrDigits);
+  res.setCaseFormat(CaseFormat::ToUpper);
+  return res;
+}
+
+ValueStruct ValueStruct::makeBinFormatted(uint64_t val, uint8_t minNrDigits)
+{
+  ValueStruct res(val);
+
+  res.setPreferredFormat(PreferredFormat::Bin);
+  res.setMinNrDigits(minNrDigits);
+  return res;
+}
+
 void ValueStruct::setPreferredFormat(ValueStruct::PreferredFormat format)
 {
   const auto vtype = getValueType();
@@ -38,6 +57,8 @@ void ValueStruct::setPreferredFormat(ValueStruct::PreferredFormat format)
     _preferredFormat = (uint64_t)format;
   }
 }
+
+void ValueStruct::setCaseFormat(ValueStruct::CaseFormat caseFormat) { _caseFormat = (uint64_t)caseFormat; }
 
 void ValueStruct::clear() {
   if (!_isSSO
@@ -75,6 +96,7 @@ ValueStruct& ValueStruct::deepCopy(const ValueStruct& rhs)
 ValueStruct::ValueStruct(const bool& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Bool),
+  _caseFormat(0),
   _size(1),
   u64_val(val ? 1ull : 0ull)
 {}
@@ -84,6 +106,7 @@ ValueStruct::ValueStruct(int val) :
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -94,6 +117,7 @@ ValueStruct::ValueStruct(int32_t val) :
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -104,6 +128,7 @@ ValueStruct::ValueStruct(uint32_t val) :
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -114,6 +139,7 @@ ValueStruct::ValueStruct(size_t val) :
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -124,6 +150,7 @@ ValueStruct::ValueStruct(const uint64_t& val) :
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -133,6 +160,7 @@ ValueStruct::ValueStruct(const int64_t& val) :
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
   _minNrDigits(1),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -144,6 +172,7 @@ ValueStruct::ValueStruct(const float& val,
   _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Float),
   _nrDecimals((uint64_t)nrDecimals),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   f_val(val)
 {}
@@ -155,6 +184,7 @@ ValueStruct::ValueStruct(const double& val,
   _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Double),
   _nrDecimals((uint64_t)nrDecimals),
+  _caseFormat(0),
   _size(sizeof(val) * 8),
   d_val(val)
 {}
@@ -162,6 +192,7 @@ ValueStruct::ValueStruct(const double& val,
 ValueStruct::ValueStruct(const char*val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _caseFormat(0),
   _size(val ? strlen_P((const char *)(val)) : 0),
   str_val(nullptr)
 {
@@ -186,6 +217,7 @@ ValueStruct::ValueStruct(const char*val) :
 ValueStruct::ValueStruct(const String& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _caseFormat(0),
   _size(val.length()),
   str_val(nullptr)
 {
@@ -211,6 +243,7 @@ ValueStruct::ValueStruct(const String& val) :
 ValueStruct::ValueStruct(String&& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _caseFormat(0),
   _size(val.length()),
   str_val(nullptr)
 {
@@ -240,24 +273,25 @@ ValueStruct::ValueStruct(String&& val) :
 ValueStruct::ValueStruct(const __FlashStringHelper *val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::FlashString),
+  _caseFormat(0),
   _size(val ? strlen_P((const char *)(val)) : 0),
   str_val((void *)(val))
 {}
 
-ValueStruct::ValueType ValueStruct::fromString(const __FlashStringHelper *val)
+ValueStruct ValueStruct::makeFromString(const __FlashStringHelper *val)
 {
-  if (fromString(String(val)) == ValueStruct::ValueType::String)
+  auto res(makeFromString(String(val)));
+
+  if (res.getValueType() == ValueStruct::ValueType::String)
   {
     // We can store it as a flash string, which doesn't need memory allocation
-    this->operator=(ValueStruct(val));
+    return ValueStruct(val);
   }
-  return getValueType();
+  return res;
 }
 
-ValueStruct::ValueType ValueStruct::fromString(const String& val)
+ValueStruct ValueStruct::makeFromString(const String& val)
 {
-  clear();
-
   String numStr;
   NumericalType detectedType = NumericalType::Not_a_number;
   bool negativeValue{};
@@ -271,8 +305,7 @@ ValueStruct::ValueType ValueStruct::fromString(const String& val)
     const bool b_false = trimmedVal.equalsIgnoreCase(F("false"));
 
     if (b_true || b_false) {
-      this->operator=(ValueStruct(b_true));
-      return ValueStruct::ValueType::Bool;
+      return ValueStruct(b_true);
     }
 
     numStr = getNumerical(trimmedVal, NumericalType::FloatingPoint, detectedType);
@@ -292,25 +325,26 @@ ValueStruct::ValueType ValueStruct::fromString(const String& val)
       ESPEASY_RULES_FLOAT_TYPE val_f{};
       int nrDec{};
 
-      if (validDoubleFromString(numStr, val_f, nrDec) || (nrDec < 0))
+      if (validDoubleFromString(numStr, val_f, nrDec) && (nrDec >= 0))
       {
-        this->operator=(ValueStruct(val_f, nrDec));
-        return ValueStruct::ValueType::Float;
+        return ValueStruct(val_f, nrDec);
       }
       break;
     }
     default:
     {
+      ValueStruct res;
+
       if (negativeValue) {
         int64_t result{};
 
         if (validInt64FromString(numStr, result))
         {
           if (std::numeric_limits<int32_t>::min() < result) {
-            this->operator=(ValueStruct(static_cast<int32_t>(result)));
+            res = ValueStruct(static_cast<int32_t>(result));
           }
           else {
-            this->operator=(ValueStruct(result));
+            res = ValueStruct(result);
           }
         }
       } else {
@@ -319,32 +353,29 @@ ValueStruct::ValueType ValueStruct::fromString(const String& val)
         if (validUInt64FromString(numStr, result))
         {
           if (std::numeric_limits<uint32_t>::max() > result) {
-            this->operator=(ValueStruct(static_cast<uint32_t>(result)));
+            res = ValueStruct(static_cast<uint32_t>(result));
           }
           else {
-            this->operator=(ValueStruct(result));
+            res = ValueStruct(result);
           }
         }
       }
 
-      if (isSet()) {
+      if (res.isSet()) {
         PreferredFormat format(PreferredFormat::Default);
 
         if (detectedType == NumericalType::BinaryUint) { format = PreferredFormat::Bin; }
         else if (detectedType == NumericalType::HexadecimalUInt) { format = PreferredFormat::Hex; }
 
-        setPreferredFormat(format);
+        res.setPreferredFormat(format);
+        return res;
       }
       break;
     }
   }
 
-  if (!isSet()) {
-    // Just store it as a string type
-    this->operator=(ValueStruct(val));
-  }
-
-  return getValueType();
+  // Just store it as a string type
+  return ValueStruct(val);
 }
 
 String ValueStruct::toString() const
@@ -382,10 +413,20 @@ int64_t ValueStruct::toInt() const
       }
       break;
     }
+    case ValueStruct::ValueType::Float:
+
+      if (isValidFloat(f_val)) {
+        return roundf(f_val);
+      }
+      break;
+    case ValueStruct::ValueType::Double:
+
+      if (isValidDouble(d_val)) {
+        return round(d_val);
+      }
+      break;
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
-    case ValueStruct::ValueType::Float:
-    case ValueStruct::ValueType::Double:
     case ValueStruct::ValueType::Unset:
       break;
   }
@@ -431,12 +472,35 @@ size_t ValueStruct::print(Print& out) const
   return print(out, v);
 }
 
+size_t ValueStruct::formatCase(Print& out, String&& str) const
+{
+  switch (getCaseFormat())
+  {
+    case CaseFormat::ToLower:
+    {
+      str.toLowerCase();
+      break;
+    }
+    case CaseFormat::ToUpper:
+    {
+      str.toUpperCase();
+      break;
+    }
+    default:
+      break;
+  }
+  return out.print(str);
+}
+
 size_t ValueStruct::print(Print& out, ValueType& valueType) const
 {
   valueType = getValueType();
 
   if (_isSSO) {
-    return out.write((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR);
+    if (getCaseFormat() == CaseFormat::KeepCase) {
+      return out.write((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR);
+    }
+    return formatCase(out, String((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR));
   }
 
   switch (valueType)
@@ -448,12 +512,20 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     case ValueStruct::ValueType::String:
     {
       if (str_val == nullptr) { return 0; }
-      return out.write((const uint8_t *)str_val, _size);
+
+      if (getCaseFormat() == CaseFormat::KeepCase) {
+        return out.write((const uint8_t *)str_val, _size);
+      }
+      return formatCase(out, String((const uint8_t *)str_val, _size));
     }
     case ValueStruct::ValueType::FlashString:
     {
       if (str_val == nullptr) { return 0; }
-      return out.print((const __FlashStringHelper *)str_val);
+
+      if (getCaseFormat() == CaseFormat::KeepCase) {
+        return out.print((const __FlashStringHelper *)str_val);
+      }
+      return formatCase(out, String((const __FlashStringHelper *)str_val));
     }
     case ValueStruct::ValueType::Float:
     {
@@ -478,7 +550,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     case ValueStruct::ValueType::Int:
     {
       if ((_size > 32) || _minNrDigits) {
-        return out.print(ll2String(i64_val, DEC, _minNrDigits));
+        return out.print(ll2String(i64_val, DEC, _minNrDigits, '\0', getCaseFormat() == CaseFormat::ToUpper));
       }
       auto v = static_cast<int32_t>(i64_val);
       return out.print(v);
@@ -496,7 +568,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
       }
 
       if ((_size > 32) || _minNrDigits) {
-        return out.print(ull2String(u64_val, DEC, _minNrDigits));
+        return out.print(ull2String(u64_val, DEC, _minNrDigits, '\0', getCaseFormat() == CaseFormat::ToUpper));
       }
       auto v = static_cast<uint32_t>(u64_val);
       return out.print(v);

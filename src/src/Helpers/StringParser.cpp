@@ -1110,3 +1110,42 @@ void parseCommandString(struct EventStruct *event, const String& string)
     event->ParN[i] = parseCommandArgumentInt(string, i + 1);
   }
 }
+
+
+KeyValueStruct parseArguments(
+  const String& string, 
+  char separator, 
+  bool keepRawStrings)
+{
+  String  result;
+  uint8_t indexFind = 1;
+
+  if (!GetArgv(string.c_str(), result, indexFind, separator)) {
+    return KeyValueStruct();
+  }
+  KeyValueStruct res(result);
+  res._key.setCaseFormat(ValueStruct::CaseFormat::ToLower);
+
+  while (GetArgv(string.c_str(), result, ++indexFind, separator))
+  {
+    if (keepRawStrings) { res.appendValue(result); }
+    else {
+      if (!result.isEmpty() && (result[0] == '=')) {
+        ESPEASY_RULES_FLOAT_TYPE param{};
+
+        // Starts with an '=', so Calculate starting at next position
+        CalculateReturnCode returnCode = Calculate(result.substring(1), param);
+
+        if (!isError(returnCode)) {
+          res.appendValue(ValueStruct(param));
+        } else {
+          res.appendValue(ValueStruct::makeFromString(result));
+        }
+      } else {
+        res.appendValue(ValueStruct::makeFromString(result));
+      }
+    }
+  }
+
+  return res;
+}

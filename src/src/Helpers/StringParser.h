@@ -3,6 +3,7 @@
 
 #include "../../ESPEasy_common.h"
 
+#include "../DataStructs/KeyValueStruct.h"
 #include "../Globals/Plugins.h"
 
 /********************************************************************************************\
@@ -115,5 +116,9 @@ int parseCommandArgumentInt(const String& string,
 void parseCommandString(struct EventStruct *event,
                         const String      & string);
 
+KeyValueStruct parseArguments(
+  const String& string, 
+  char separator, 
+  bool keepRawStrings = false);
 
 #endif

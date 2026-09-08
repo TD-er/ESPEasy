@@ -910,7 +910,7 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
 
     case LabelType::ESP_CHIP_ID:
     {
-      return KeyValueStruct(F("ESP Chip ID"), formatToHex(getChipId(), 6), KeyValueStruct::Format::PreFormatted);
+      return KeyValueStruct::makeHexFormatted(F("ESP Chip ID"), getChipId(), 6);
     }
     case LabelType::ESP_CHIP_FREQ:
     {
@@ -961,7 +961,8 @@ KeyValueStruct getKeyValue(LabelType::Enum label, bool extendedValue)
       auto flashChipId = getFlashChipId();
 
       if (flashChipId == 0) { break; }
-      return KeyValueStruct(F("Flash Chip ID"), formatToHex(flashChipId, 6), KeyValueStruct::Format::PreFormatted);
+
+      return KeyValueStruct::makeHexFormatted(F("Flash Chip ID"), flashChipId, 6);
     }
     case LabelType::FLASH_CHIP_VENDOR:
     {

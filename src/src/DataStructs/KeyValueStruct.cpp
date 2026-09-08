@@ -1,10 +1,9 @@
 #include "../DataStructs/KeyValueStruct.h"
 
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-#include "../Helpers/ESPEasy_UnitOfMeasure.h"
+# include "../Helpers/ESPEasy_UnitOfMeasure.h"
 #endif
 #include "../Helpers/StringConverter.h"
-
 
 // ********************************************************************************
 // KeyValueStruct
@@ -133,16 +132,35 @@ KeyValueStruct::KeyValueStruct(const String& key,
   _values.emplace_back(ValueStruct(std::move(val)));
 }
 
+KeyValueStruct KeyValueStruct::makeHexFormatted(const __FlashStringHelper *key, uint64_t val, uint8_t minNrDigits)
+{
+  KeyValueStruct kv(
+    key,
+    KeyValueStruct::Format::PreFormatted);
+
+  kv.setValue(ValueStruct::makeHexFormatted(val, minNrDigits));
+  return kv;
+}
+
 #if FEATURE_TASKVALUE_UNIT_OF_MEASURE
-  String KeyValueStruct::getUnit() const
-  {
-    return toUnitOfMeasureName(_uomIndex);
-  }
-#endif
 
-void KeyValueStruct::setID(const String& id)                  { __id = id; }
+String KeyValueStruct::getUnit() const
+{
+  return toUnitOfMeasureName(_uomIndex);
+}
 
-void KeyValueStruct::setID(const __FlashStringHelper *id)     { __id = id; }
+#endif // if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+
+void KeyValueStruct::setID(const String& id)              { __id = id; }
+
+void KeyValueStruct::setID(const __FlashStringHelper *id) { __id = id; }
+
+void KeyValueStruct::setValue(ValueStruct&& value)
+{
+  _values.clear();
+  _isArray = false;
+  _values.emplace_back(std::move(value));
+}
 
 void KeyValueStruct::appendValue(ValueStruct&& value)
 {
@@ -156,7 +174,7 @@ void KeyValueStruct::appendValue(const String& value)
   _isArray = true;
 }
 
-void KeyValueStruct::appendValue(const __FlashStringHelper * value)
+void KeyValueStruct::appendValue(const __FlashStringHelper *value)
 {
   _values.emplace_back(ValueStruct(value));
   _isArray = true;
