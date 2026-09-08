@@ -1120,13 +1120,16 @@ KeyValueStruct parseArguments(
   String  result;
   uint8_t indexFind = 1;
 
-  if (!GetArgv(string.c_str(), result, indexFind, separator)) {
+  unsigned int string_pos = 0, argc_pos = 0;
+  const char  *string_c_str = string.c_str();
+
+  if (!GetArgv(string_c_str, string.length(), result, indexFind, string_pos, argc_pos, separator)) {
     return KeyValueStruct();
   }
   KeyValueStruct res(result);
   res._key.setCaseFormat(ValueStruct::CaseFormat::ToLower);
 
-  while (GetArgv(string.c_str(), result, ++indexFind, separator))
+  while (GetArgv(string_c_str, string.length(), result, indexFind, string_pos, argc_pos, separator))
   {
     if (keepRawStrings) { res.appendValue(result); }
     else {

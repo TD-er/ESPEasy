@@ -812,7 +812,18 @@ String parseStringToEndKeepCase(const String& string, uint8_t indexFind, char se
   uint8_t nextArgument = indexFind;
   bool hasArgument  = false;
 
-  while (GetArgvBeginEnd(string.c_str(), nextArgument, tmppos_begin, tmppos_end, separator))
+
+  unsigned int string_pos = 0, argc_pos = 0;
+  const char  *string_c_str = string.c_str();
+
+  while (GetArgvBeginEnd(string_c_str, 
+                         string.length(), 
+                         nextArgument, 
+                         tmppos_begin, 
+                         tmppos_end, 
+                         string_pos, 
+                         argc_pos, 
+                         separator))
   {
     hasArgument = true;
 
@@ -1644,8 +1655,37 @@ bool HasArgv(const char *string, unsigned int argc) {
 }
 
 bool GetArgv(const char *string, String& argvString, unsigned int argc, char separator) {
+  const size_t string_len = strlen(string);
+  unsigned int string_pos = 0, argc_pos = 0;
+
+  return GetArgv(
+    string,
+    string_len,
+    argvString, 
+    argc,
+    string_pos, 
+    argc_pos, 
+    separator);
+}
+
+bool GetArgv(const char  *string,
+             const size_t &string_len,
+             String     & argvString,
+             unsigned int argc,
+             unsigned int &string_pos, 
+             unsigned int &argc_pos,
+             char         separator)
+{
   int  pos_begin, pos_end;
-  bool hasArgument = GetArgvBeginEnd(string, argc, pos_begin, pos_end, separator);
+  bool hasArgument = GetArgvBeginEnd(
+    string,
+    string_len,
+    argc,
+    pos_begin,
+    pos_end,
+    string_pos,
+    argc_pos,
+    separator);
 
   free_string(argvString);
 
@@ -1660,14 +1700,38 @@ bool GetArgv(const char *string, String& argvString, unsigned int argc, char sep
   return true;
 }
 
-bool GetArgvBeginEnd(const char *string, const unsigned int argc, int& pos_begin, int& pos_end, char separator) {
+/*
+bool GetArgvBeginEnd(const char *string, const unsigned int argc, int& pos_begin, int& pos_end, char separator) 
+{
+  const size_t string_len = strlen(string);
+  unsigned int string_pos = 0, argc_pos = 0;
+
+  return GetArgvBeginEnd(
+    string,
+    string_len,
+    argc,
+    pos_begin,
+    pos_end,
+    string_pos,
+    argc_pos,
+    separator);
+}
+*/
+
+bool GetArgvBeginEnd(const char        *string,
+                     const size_t &string_len,
+                     const unsigned int argc,
+                     int              & pos_begin,
+                     int              & pos_end,
+                     unsigned int &string_pos, 
+                     unsigned int &argc_pos,
+                     char               separator)
+{
   pos_begin = -1;
   pos_end   = -1;
   if (string == nullptr) {
     return false;
   }
-  size_t string_len = strlen(string);
-  unsigned int string_pos = 0, argc_pos = 0;
   bool parenthesis          = false;
   char matching_parenthesis = '"';
 

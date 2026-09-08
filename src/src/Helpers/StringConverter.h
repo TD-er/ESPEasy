@@ -443,10 +443,27 @@ bool GetArgv(const char  *string,
              unsigned int argc,
              char         separator = ',');
 
+bool GetArgv(const char    *string,
+             const size_t & string_len,
+             String       & argvString,
+             unsigned int   argc,
+             unsigned int & string_pos, 
+             unsigned int & argc_pos,
+             char           separator = ',');
+/*
 bool GetArgvBeginEnd(const char        *string,
                      const unsigned int argc,
                      int              & pos_begin,
                      int              & pos_end,
+                     char               separator = ',');
+*/
+bool GetArgvBeginEnd(const char        *string,
+                     const size_t     & string_len,
+                     const unsigned int argc,
+                     int              & pos_begin,
+                     int              & pos_end,
+                     unsigned int     & string_pos, 
+                     unsigned int     & argc_pos,
                      char               separator = ',');
 
 

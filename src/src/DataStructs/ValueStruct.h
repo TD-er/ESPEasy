@@ -43,7 +43,9 @@ public:
     _isSSO(0),
     _valueType((uint64_t)ValueStruct::ValueType::Unset),
     str_val(nullptr)
-  {}
+  {
+    memset(bytes_all, 0, sizeof(bytes_all));
+  }
 
   ~ValueStruct();
 
@@ -151,13 +153,21 @@ private:
 
   union {
     struct {
-      uint64_t _isSSO             : 1;
+      // Need to have the most important bits for formatting strings in the first byte
+      // When more bits are needed for storing SSO strings,
+      // move the first byte of SSO string (VALUE_STRUCT_SSO_FIRST_CHAR_INDEX)
+      // and decrease max. nr of SSO bytes (VALUE_STRUCT_SSO_MAX_SIZE)
+
+      uint64_t _isSSO           : 1;
+      uint64_t _valueType       : 3;
+      uint64_t _preferredFormat : 2;
+      uint64_t _caseFormat      : 2;
+
+      // --- End of 1st byte
+      
       uint64_t _trimTrailingZeros : 1;
-      uint64_t _valueType         : 4;
-      uint64_t _preferredFormat   : 2;
+      uint64_t _minNrDigits       : 7;  // For printing ints with leading zeroes
       uint64_t _nrDecimals        : 8;
-      uint64_t _minNrDigits       : 6;  // For printing ints with leading zeroes
-      uint64_t _caseFormat        : 2;
       uint64_t _size              : 16; // Length of string or nr of bits
       uint64_t unused             : 24;
 

@@ -185,7 +185,7 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct& val, bool forceString)
 
     case ValueStruct::ValueType::Int:
     case ValueStruct::ValueType::UInt:
-      pr.print(str);
+      pr.print(to_json_value(str, val.getPreferredFormat() != ValueStruct::PreferredFormat::Default));
       return;
     case ValueStruct::ValueType::Bool:
 

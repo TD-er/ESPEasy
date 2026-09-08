@@ -96,7 +96,9 @@ ValueStruct& ValueStruct::deepCopy(const ValueStruct& rhs)
 ValueStruct::ValueStruct(const bool& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Bool),
+  _preferredFormat(0),
   _caseFormat(0),
+  _trimTrailingZeros(0),
   _size(1),
   u64_val(val ? 1ull : 0ull)
 {}
@@ -105,8 +107,8 @@ ValueStruct::ValueStruct(int val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -116,8 +118,8 @@ ValueStruct::ValueStruct(int32_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -127,8 +129,8 @@ ValueStruct::ValueStruct(uint32_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -138,8 +140,8 @@ ValueStruct::ValueStruct(size_t val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -149,8 +151,8 @@ ValueStruct::ValueStruct(const uint64_t& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::UInt),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   u64_val(val)
 {}
@@ -159,8 +161,8 @@ ValueStruct::ValueStruct(const int64_t& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Int),
   _preferredFormat((uint64_t)PreferredFormat::Default),
-  _minNrDigits(1),
   _caseFormat(0),
+  _minNrDigits(1),
   _size(sizeof(val) * 8),
   i64_val(val)
 {}
@@ -169,10 +171,11 @@ ValueStruct::ValueStruct(const float& val,
                          uint8_t      nrDecimals,
                          bool         trimTrailingZeros) :
   _isSSO(0),
-  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Float),
-  _nrDecimals((uint64_t)nrDecimals),
+  _preferredFormat(0),
   _caseFormat(0),
+  _trimTrailingZeros((uint64_t)trimTrailingZeros),
+  _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
   f_val(val)
 {}
@@ -181,10 +184,11 @@ ValueStruct::ValueStruct(const double& val,
                          uint8_t       nrDecimals,
                          bool          trimTrailingZeros) :
   _isSSO(0),
-  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _valueType((uint64_t)ValueStruct::ValueType::Double),
-  _nrDecimals((uint64_t)nrDecimals),
+  _preferredFormat(0),
   _caseFormat(0),
+  _trimTrailingZeros((uint64_t)trimTrailingZeros),
+  _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
   d_val(val)
 {}
@@ -192,6 +196,7 @@ ValueStruct::ValueStruct(const double& val,
 ValueStruct::ValueStruct(const char*val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _preferredFormat(0),
   _caseFormat(0),
   _size(val ? strlen_P((const char *)(val)) : 0),
   str_val(nullptr)
@@ -217,6 +222,7 @@ ValueStruct::ValueStruct(const char*val) :
 ValueStruct::ValueStruct(const String& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _preferredFormat(0),
   _caseFormat(0),
   _size(val.length()),
   str_val(nullptr)
@@ -243,6 +249,7 @@ ValueStruct::ValueStruct(const String& val) :
 ValueStruct::ValueStruct(String&& val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::String),
+  _preferredFormat(0),
   _caseFormat(0),
   _size(val.length()),
   str_val(nullptr)
@@ -273,6 +280,7 @@ ValueStruct::ValueStruct(String&& val) :
 ValueStruct::ValueStruct(const __FlashStringHelper *val) :
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::FlashString),
+  _preferredFormat(0),
   _caseFormat(0),
   _size(val ? strlen_P((const char *)(val)) : 0),
   str_val((void *)(val))

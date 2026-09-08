@@ -137,7 +137,7 @@ struct KeyValueStruct
   String getID() const;
 
   operator bool() const {
-    return _key.operator bool();
+    return getNrValues() || _key.operator bool();
   }
 
   size_t getNrValues() const { return _values.size(); }

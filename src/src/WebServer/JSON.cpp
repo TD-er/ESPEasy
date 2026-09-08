@@ -638,7 +638,7 @@ void handle_json_stream_task_value_data(TaskValuesWriterHelper*data)
     writer->write({ F("NrDecimals"),  nrDecimals });
 # if FEATURE_STRING_VARIABLES
 
-    if (!data->hasPresentation) {
+    if (data->hasPresentation) {
       KeyValueStruct kv(F("Presentation"), data->presentation);
       kv.setID(data->format_ID(TaskValuesWriterHelper::ID_type::Presentation));
       writer->write(kv);
