@@ -19,6 +19,8 @@ struct CommandArgParser {
   // consider given string as a list of:
   // - command
   // - 0 or more arguments
+  // Set keepRawStrings to true when some parameters might need
+  // special attention, like combinations of numericals and ':'
   bool readCommand(
     const String& string,
     char          separator      = ',',
@@ -26,7 +28,7 @@ struct CommandArgParser {
   {
     _hasCommand    = true;
     _hasSubcommand = false;
-    return _init(string, separator, false, keepRawStrings);
+    return _init(string, separator, keepRawStrings);
   }
 
   bool readCommandAndMatch(
@@ -38,7 +40,7 @@ struct CommandArgParser {
     _hasCommand    = true;
     _hasSubcommand = false;
     return
-      _init(string, separator, false, keepRawStrings) &&
+      _init(string, separator, keepRawStrings) &&
       commandEquals(cmdToMatch);
   }
 
@@ -53,7 +55,7 @@ struct CommandArgParser {
   {
     _hasCommand    = true;
     _hasSubcommand = true;
-    return _init(string, separator, false, keepRawStrings);
+    return _init(string, separator, keepRawStrings);
   }
 
   bool readCommandSubCommandAndMatch(
@@ -65,7 +67,7 @@ struct CommandArgParser {
     _hasCommand    = true;
     _hasSubcommand = true;
     return
-      _init(string, separator, false, keepRawStrings) &&
+      _init(string, separator, keepRawStrings) &&
       commandEquals(cmdToMatch);
   }
 
@@ -78,7 +80,7 @@ struct CommandArgParser {
   {
     _hasCommand    = false;
     _hasSubcommand = false;
-    return _init(string, separator, true, keepRawStrings);
+    return _init(string, separator, keepRawStrings);
   }
 
 private:
@@ -86,7 +88,6 @@ private:
   bool _init(
     const String& string,
     char          separator,
-    bool          argumentsOnly,
     bool          keepRawStrings);
 
 public:
@@ -111,8 +112,8 @@ public:
   const ValueStruct& getArg(uint8_t index) const;
 
   // Returns int-representation of the requested argument or defaultValue if argument is not present or not valid.
-  int                getArgInt(uint8_t index,
-                               int     defaultValue = 0) const;
+  int64_t            getArgInt(uint8_t index,
+                               int64_t defaultValue = 0) const;
 
   size_t             getNrArgs() const;
 

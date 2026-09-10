@@ -1798,3 +1798,17 @@ bool GetArgvBeginEnd(const char        *string,
   }
   return false;
 }
+
+bool ContainsAny(const String& str, const __FlashStringHelper * charsToFind)
+{
+  return ContainsAny(str, String(charsToFind));
+}
+
+bool ContainsAny(const String& str, const String& charsToFind)
+{
+  const size_t nrCharsToFind = charsToFind.length();
+  for (size_t i = 0; i < nrCharsToFind; ++i) {
+    if (str.indexOf(charsToFind[i]) != -1) return true;
+  }
+  return false;
+}

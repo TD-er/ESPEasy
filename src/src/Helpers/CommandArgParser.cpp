@@ -26,10 +26,12 @@ void CommandArgParser::clear()
 bool CommandArgParser::_init(
   const String& string,
   char          separator,
-  bool          argumentsOnly,
   bool          keepRawStrings)
-
 {
+  const bool argumentsOnly = !_hasCommand;
+
+  if (argumentsOnly) { _hasSubcommand = false; }
+
   _kv.clear();
   uint8_t indexFind = 0;
 
@@ -68,7 +70,10 @@ bool CommandArgParser::_init(
             _kv.appendValue(ValueStruct::makeFromString(arg_str));
           }
         } else {
-          _kv.appendValue(ValueStruct::makeFromString(arg_str));
+          if (ContainsAny(arg_str, F(":#[](){},\"'`"))) { _kv.appendValue(arg_str); }
+          else {
+            _kv.appendValue(ValueStruct::makeFromString(arg_str));
+          }
         }
       }
     }
@@ -125,7 +130,7 @@ const ValueStruct& CommandArgParser::getArg(uint8_t index) const
   return INVALID_VALUESTRUCT;
 }
 
-int CommandArgParser::getArgInt(uint8_t index, int defaultValue) const
+int64_t CommandArgParser::getArgInt(uint8_t index, int64_t defaultValue) const
 {
   return getArg(index).toInt(defaultValue);
 }
@@ -142,11 +147,14 @@ void CommandArgParser::debug(const __FlashStringHelper *comment, uint8_t logLeve
   if (!loglevelActiveFor(logLevel)) { return; }
   String logstr = comment;
 
-  if (!logstr.isEmpty()) { logstr += F(": "); }
+  if (logstr.isEmpty()) { logstr += F("CommandArgParser:"); }
+  logstr += ':';
 
-  logstr += concat(
-    F("CommandArgParser: cmd:"),
-    getCommand().toString());
+  if (_hasCommand) {
+    logstr += concat(
+      F(" cmd:"),
+      getCommand().toString());
+  }
 
   if (_hasSubcommand) {
     logstr += concat(

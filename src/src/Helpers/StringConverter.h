@@ -466,5 +466,7 @@ bool GetArgvBeginEnd(const char        *string,
                      unsigned int     & argc_pos,
                      char               separator = ',');
 
+bool ContainsAny(const String& str, const char * charsToFind, size_t nrCharsToFind);
+bool ContainsAny(const String& str, const String& charsToFind);
 
 #endif // HELPERS_STRINGCONVERTER_H

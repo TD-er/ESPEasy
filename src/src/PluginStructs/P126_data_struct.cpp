@@ -107,13 +107,13 @@ bool P126_data_struct::plugin_write(struct EventStruct *event,
     return false;
   }
 
-# ifndef BUILD_NO_DEBUG
+# ifdef P126_DEBUG_LOG
   parsedCmd.debug(F("init success"), LOG_LEVEL_INFO);
 # endif
 
   const bool hc_update = parsedCmd.getSubCommand().toString().indexOf(F("noupdate")) == -1;
 
-  if (parsedCmd.subCommandEquals(F("set")) || 
+  if (parsedCmd.subCommandEquals(F("set")) ||
       parsedCmd.subCommandEquals(F("setnoupdate"))) {
     const uint8_t  pin   = parsedCmd.getArgInt(0, 0);
     const uint16_t value = parsedCmd.getArgInt(1, -1);
@@ -151,65 +151,76 @@ bool P126_data_struct::plugin_write(struct EventStruct *event,
     }
 
     uint32_t par   = 0u;
-    uint8_t  param = 3; // Start with an offset
+    uint8_t  param = 0; // Argument index
     uint8_t  width = 4;
     uint8_t  idx   = 0;
-    String   arg   = parseString(string, param);
+    String   arg   = parsedCmd.getArg(param).toString();
 
     while (!arg.isEmpty() && idx < _chipCount && success) {
-      int colon    = arg.indexOf(':'); // First colon: Chip-index, range 1.._chipCount
-      int32_t itmp = 0;
+      CommandArgParser cwv;
 
-      if (colon != -1) {
-        const String cis = arg.substring(0, colon);
-        arg = arg.substring(colon + 1);
-
-        if (!cis.isEmpty() && validIntFromString(cis, itmp) && (itmp > 0) && (itmp <= _chipCount)) {
-          idx = itmp - 1;       // Actual range is 0.._chipCount - 1
-        } else {
-          success = false;      // Cancel entire operation on error
-        }
+      if (!cwv.readArgumentsOnly(arg, ':'))
+      {
+        success = false;
+        continue;
       }
-      colon = arg.indexOf(':'); // Second colon: data width, range 1..4 bytes
-      width = 4;                // Set default data width to 4 = 32 bits
 
-      if (colon != -1) {
-        const String lis = arg.substring(0, colon);
-        arg = arg.substring(colon + 1);
+# ifdef P126_DEBUG_LOG
+      cwv.debug(F("Chip:Width:Val"), LOG_LEVEL_INFO);
+# endif
 
-        if (!lis.isEmpty() && validIntFromString(lis, itmp) && (itmp > 0) && (itmp <= 4)) {
-          width = itmp;
-        } else {
-          success = false; // Cancel entire operation on error
-        }
+      // First argument: Chip-index, range 1.._chipCount
+      const auto chipIndex = cwv.getArgInt(0);
+
+      if ((chipIndex > 0) && (chipIndex <= _chipCount)) {
+        idx = chipIndex - 1; // Actual range is 0.._chipCount - 1
+      } else {
+        success = false;     // Cancel entire operation on error
+        continue;
       }
-      int64_t tmp = 0;
-      par = 0u; // reset
 
-      if (validInt64FromString(arg, tmp)) {
-        par = static_cast<uint32_t>(tmp);
+      // Second argument: data width, range 1..4 bytes, default: 4
+      width = cwv.getArgInt(1, 4);
+
+      if ((width <= 0) && (width > 4)) {
+        success = false; // Cancel entire operation on error
+        continue;
       }
+
+
+      // Third argument: value
+      const auto tmp = cwv.getArgInt(2, -1);
+
+      if (tmp < 0)
+      {
+        success = false; // Cancel entire operation on error
+        continue;
+      }
+      const uint32_t nrBits = 8 * width;
+      const uint32_t mask   = std::numeric_limits<uint32_t>::max() >> (32 - nrBits);
+      par = static_cast<uint32_t>(tmp) & mask;
 
         # ifdef P126_DEBUG_LOG
 
       if (loglevelActiveFor(LOG_LEVEL_INFO)) {
+
         addLogMove(
           LOG_LEVEL_INFO,
           strformat(
-            F("%s: arg: %s, tmp: %s/0x%x, par: %d/0x%x, chip:%d, width:%d"),
+            F("%s: arg: %s, tmp: %s/%s, par: %u/%s, chip:%d, width:%d"),
             parsedCmd.getCommand().toString().c_str(),
             arg.c_str(),
             ull2String(tmp).c_str(),
-            tmp,
+            ull2String(tmp, HEX).c_str(),
             par,
-            par,
-            idx,
-            width));
+            ull2String(par, HEX).c_str(),
+            static_cast<int>(idx),
+            static_cast<int>(width)));
       }
         # endif // ifdef P126_DEBUG_LOG
 
       param++; // Process next argument
-      arg = parseString(string, param);
+      arg = parsedCmd.getArg(param).toString();
 
       for (uint8_t n = 0; n < width && idx < _chipCount; ++n, ++idx) {
         value[idx] = ((par >> (n * 8)) & 0xff);
@@ -244,9 +255,11 @@ bool P126_data_struct::plugin_write(struct EventStruct *event,
     updated = true;
     success = true;
   } else if (parsedCmd.subCommandEquals(F("setoffset"))) {
-    if ((event->Par2 >= 0) && (event->Par2 <= P126_MAX_SHOW_OFFSET)) {
+    const int chipOffset = parsedCmd.getArgInt(0, -1);
+
+    if ((chipOffset >= 0) && (chipOffset <= P126_MAX_SHOW_OFFSET)) {
       uint8_t previousOffset = P126_CONFIG_SHOW_OFFSET;
-      P126_CONFIG_SHOW_OFFSET = event->Par2;
+      P126_CONFIG_SHOW_OFFSET = chipOffset;
 
       if (P126_CONFIG_SHOW_OFFSET >= P126_CONFIG_CHIP_COUNT) {
         P126_CONFIG_SHOW_OFFSET = 0;
@@ -271,17 +284,21 @@ bool P126_data_struct::plugin_write(struct EventStruct *event,
       success = true;
     }
   } else if (parsedCmd.subCommandEquals(F("setchipcount"))) {
-    if ((event->Par2 >= 1) && (event->Par2 <= P126_MAX_CHIP_COUNT)) {
-      P126_CONFIG_CHIP_COUNT = event->Par2;
-      _chipCount             = event->Par2;
+    const int chipCount = parsedCmd.getArgInt(0, -1);
+
+    if ((chipCount >= 1) && (chipCount <= P126_MAX_CHIP_COUNT)) {
+      P126_CONFIG_CHIP_COUNT = chipCount;
+      _chipCount             = chipCount;
       shift->setSize(P126_CONFIG_CHIP_COUNT);
       success = true;
     }
     # ifdef P126_SHOW_VALUES
   } else if (parsedCmd.subCommandEquals(F("sethexbin"))) {
-    if ((event->Par2 == 0) || (event->Par2 == 1)) {
+    const int HexBin = parsedCmd.getArgInt(0, -1);
+
+    if ((HexBin == 0) || (HexBin == 1)) {
       uint32_t lSettings = P126_CONFIG_FLAGS;
-      bitWrite(lSettings, P126_FLAGS_VALUES_DISPLAY, event->Par2 == 1);
+      bitWrite(lSettings, P126_FLAGS_VALUES_DISPLAY, HexBin == 1);
       P126_CONFIG_FLAGS = lSettings;
       success           = true;
     }

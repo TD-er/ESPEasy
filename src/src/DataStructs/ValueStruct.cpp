@@ -318,6 +318,10 @@ ValueStruct ValueStruct::makeFromString(const String& val)
       return ValueStruct(b_true);
     }
 
+    if (ContainsAny(val, F(":#%[](){},\"'`"))) {
+      return ValueStruct(val);
+    }
+
     numStr = getNumerical(trimmedVal, NumericalType::FloatingPoint, detectedType);
     numStr.trim();
 
@@ -325,6 +329,7 @@ ValueStruct ValueStruct::makeFromString(const String& val)
       negativeValue = true;
     }
   }
+
 
   switch (detectedType)
   {
@@ -437,7 +442,11 @@ int64_t ValueStruct::toInt(int64_t defaultValue) const
       break;
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
-      return toString().toInt();
+
+      if (_size) {
+        return toString().toInt();
+      }
+      break;
     case ValueStruct::ValueType::Unset:
       break;
   }
