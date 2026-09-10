@@ -12,6 +12,9 @@ class ValueStruct
 {
 public:
 
+  // Don't just extend these enums as they are part of very tightly packed struct.
+  // For example if 1 extra bit is needed, the start and length of the SSO must be adjusted.
+
   enum class ValueType : uint8_t {
     Unset = 0,
     String,
@@ -23,6 +26,18 @@ public:
     Bool
 
   };
+
+  #ifndef BUILD_NO_DEBUG
+  static const char* toShortStr(ValueType valueType)
+  {
+    static const char* shortStrings = "---\0Str\0Fla\0flt\0dbl\0int\0uin\0boo\0";
+    constexpr uint8_t index_modulo = static_cast<uint8_t>(ValueType::Bool) + 1;
+    const uint8_t index = static_cast<uint8_t>(valueType) % index_modulo;
+
+    return shortStrings + 4*index;
+  }
+
+  #endif
 
   enum class PreferredFormat : uint8_t {
     Default = 0,

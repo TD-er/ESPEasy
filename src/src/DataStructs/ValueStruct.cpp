@@ -639,12 +639,12 @@ String ValueStruct::debug() const
   const String normalStr      = toString();
   const String unformattedStr = toString(true);
   String logstr               = strformat(
-    F("t:%d,'%s'"),
-    static_cast<int>(getValueType()),
+    F("%s:'%s'"),
+    toShortStr(getValueType()),
     normalStr.c_str());
 
   if (!normalStr.equals(unformattedStr)) {
-    logstr += strformat(F("u:'%s'"), unformattedStr.c_str());
+    logstr += strformat(F("/u:'%s'"), unformattedStr.c_str());
   }
 
   if (!operator bool()) {
