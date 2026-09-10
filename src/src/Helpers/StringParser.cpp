@@ -1106,7 +1106,18 @@ void parseCommandString(struct EventStruct *event, const String& string)
   checkRAM(F("parseCommandString"));
   #endif // ifndef BUILD_NO_RAM_TRACKER
 
-  for (uint8_t i = 0; i < 5; ++i) {
-    event->ParN[i] = parseCommandArgumentInt(string, i + 1);
+  CommandArgParser args;
+  args.readCommand(string);
+
+#ifndef BUILD_NO_DEBUG
+  args.debug(F("parseCommandString"), LOG_LEVEL_DEBUG);
+#endif // ifndef BUILD_NO_DEBUG
+
+
+  constexpr uint8_t nrInts = NR_ELEMENTS(event->ParN);
+
+  for (uint8_t i = 0; i < nrInts; ++i) {
+    event->ParN[i] = args.getArgInt(i);
+//    parseCommandArgumentInt(string, i + 1);
   }
 }
