@@ -95,20 +95,24 @@ public:
     return static_cast<ValueStruct::ValueType>(_valueType);
   }
 
-  ValueStruct::PreferredFormat getPreferredFormat() const
+  ValueStruct::PreferredFormat getPreferredFormat(bool unformatted = false) const
   {
+    if (unformatted) { return ValueStruct::PreferredFormat::Default; }
     return static_cast<ValueStruct::PreferredFormat>(_preferredFormat);
   }
 
   void                    setPreferredFormat(ValueStruct::PreferredFormat format);
 
-  ValueStruct::CaseFormat getCaseFormat() const {
+  ValueStruct::CaseFormat getCaseFormat(bool unformatted = false) const {
+    if (unformatted) { return ValueStruct::CaseFormat::KeepCase; }
     return static_cast<ValueStruct::CaseFormat>(_caseFormat);
   }
 
   void         setCaseFormat(ValueStruct::CaseFormat caseFormat);
 
   void         setMinNrDigits(uint8_t minNrDigits) { _minNrDigits = (uint64_t)minNrDigits; }
+
+  void         clear();
 
   ValueStruct& operator=(ValueStruct&& rhs);
   ValueStruct& operator=(const ValueStruct& rhs) = delete;
@@ -127,11 +131,12 @@ public:
   static ValueStruct makeFromString(const __FlashStringHelper *val);
   static ValueStruct makeFromString(const String& val);
 
-  String             toString() const;
+  String             toString(bool unformatted = false) const;
 
-  String             toString(ValueType& valueType) const;
+  String             toString(ValueType& valueType,
+                              bool       unformatted = false) const;
 
-  int64_t            toInt() const;
+  int64_t            toInt(int64_t defaultValue = 0) const;
 
   double             toFloat() const;
 
@@ -139,9 +144,20 @@ public:
 
   bool               isEmpty() const;
 
-  void               clear();
-
   bool               isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
+
+  bool               equals(const __FlashStringHelper *cmdStr,
+                            bool                       ignoreCase = false) const;
+  bool               equals(const String& cmdStr,
+                            bool          ignoreCase = false) const;
+
+  bool               equalsIgnoreCase(const __FlashStringHelper *cmdStr) const { return equals(cmdStr, true); }
+
+  bool               equalsIgnoreCase(const String& cmdStr) const              { return equals(cmdStr, true); }
+
+#ifndef BUILD_NO_DEBUG
+  String             debug() const;
+#endif
 
 private:
 
@@ -149,7 +165,8 @@ private:
                     String&& str) const;
 
   size_t print(Print    & out,
-               ValueType& valueType) const;
+               ValueType& valueType,
+               bool       unformatted = false) const;
 
   union {
     struct {
@@ -164,7 +181,7 @@ private:
       uint64_t _caseFormat      : 2;
 
       // --- End of 1st byte
-      
+
       uint64_t _trimTrailingZeros : 1;
       uint64_t _minNrDigits       : 7;  // For printing ints with leading zeroes
       uint64_t _nrDecimals        : 8;
@@ -190,3 +207,5 @@ private:
 
 
 }; // class ValueStruct
+
+extern const ValueStruct INVALID_VALUESTRUCT;

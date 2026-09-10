@@ -109,6 +109,8 @@ struct KeyValueStruct
      }
    */
 
+  void                  clear();
+
   static KeyValueStruct makeHexFormatted(const __FlashStringHelper *key,
                                          uint64_t                   val,
                                          uint8_t                    minNrDigits = 0);

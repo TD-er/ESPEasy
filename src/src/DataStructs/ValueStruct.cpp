@@ -10,6 +10,8 @@
 #define VALUE_STRUCT_SSO_FIRST_CHAR   bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX]
 #define VALUE_STRUCT_SSO_MAX_SIZE          14
 
+const ValueStruct INVALID_VALUESTRUCT{};
+
 // ********************************************************************************
 // ValueStruct
 // ********************************************************************************
@@ -386,23 +388,23 @@ ValueStruct ValueStruct::makeFromString(const String& val)
   return ValueStruct(val);
 }
 
-String ValueStruct::toString() const
+String ValueStruct::toString(bool unformatted) const
 {
   ValueType valueType;
 
-  return toString(valueType);
+  return toString(valueType, unformatted);
 }
 
-String ValueStruct::toString(ValueType& valueType) const
+String ValueStruct::toString(ValueType& valueType, bool unformatted) const
 {
   PrintToString p;
 
-  print(p, valueType);
+  print(p, valueType, unformatted);
   String res(p.getMove());
   return res;
 }
 
-int64_t ValueStruct::toInt() const
+int64_t ValueStruct::toInt(int64_t defaultValue) const
 {
   switch (getValueType())
   {
@@ -435,10 +437,11 @@ int64_t ValueStruct::toInt() const
       break;
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
+      return toString().toInt();
     case ValueStruct::ValueType::Unset:
       break;
   }
-  return toString().toInt();
+  return defaultValue;
 }
 
 double ValueStruct::toFloat() const
@@ -500,12 +503,12 @@ size_t ValueStruct::formatCase(Print& out, String&& str) const
   return out.print(str);
 }
 
-size_t ValueStruct::print(Print& out, ValueType& valueType) const
+size_t ValueStruct::print(Print& out, ValueType& valueType, bool unformatted) const
 {
   valueType = getValueType();
 
   if (_isSSO) {
-    if (getCaseFormat() == CaseFormat::KeepCase) {
+    if (getCaseFormat(unformatted) == CaseFormat::KeepCase) {
       return out.write((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR);
     }
     return formatCase(out, String((const char *)&VALUE_STRUCT_SSO_FIRST_CHAR));
@@ -521,7 +524,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     {
       if (str_val == nullptr) { return 0; }
 
-      if (getCaseFormat() == CaseFormat::KeepCase) {
+      if (getCaseFormat(unformatted) == CaseFormat::KeepCase) {
         return out.write((const uint8_t *)str_val, _size);
       }
       return formatCase(out, String((const uint8_t *)str_val, _size));
@@ -530,7 +533,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     {
       if (str_val == nullptr) { return 0; }
 
-      if (getCaseFormat() == CaseFormat::KeepCase) {
+      if (getCaseFormat(unformatted) == CaseFormat::KeepCase) {
         return out.print((const __FlashStringHelper *)str_val);
       }
       return formatCase(out, String((const __FlashStringHelper *)str_val));
@@ -558,25 +561,25 @@ size_t ValueStruct::print(Print& out, ValueType& valueType) const
     case ValueStruct::ValueType::Int:
     {
       if ((_size > 32) || _minNrDigits) {
-        return out.print(ll2String(i64_val, DEC, _minNrDigits, '\0', getCaseFormat() == CaseFormat::ToUpper));
+        return out.print(ll2String(i64_val, DEC, _minNrDigits, '\0', getCaseFormat(unformatted) == CaseFormat::ToUpper));
       }
       auto v = static_cast<int32_t>(i64_val);
       return out.print(v);
     }
     case ValueStruct::ValueType::UInt:
     {
-      const auto format = getPreferredFormat();
+      const auto format = getPreferredFormat(unformatted);
 
       if (format == PreferredFormat::Bin) {
         return out.print(concat(F("0b"), ull2String(u64_val, BIN, _minNrDigits)));
       }
 
       if (format == PreferredFormat::Hex) {
-        return out.print(concat(F("0x"), ull2String(u64_val, HEX, _minNrDigits)));
+        return out.print(concat(F("0x"), ull2String(u64_val, HEX, _minNrDigits, '\0', getCaseFormat(unformatted) == CaseFormat::ToUpper)));
       }
 
       if ((_size > 32) || _minNrDigits) {
-        return out.print(ull2String(u64_val, DEC, _minNrDigits, '\0', getCaseFormat() == CaseFormat::ToUpper));
+        return out.print(ull2String(u64_val, DEC, _minNrDigits));
       }
       auto v = static_cast<uint32_t>(u64_val);
       return out.print(v);
@@ -602,3 +605,44 @@ bool ValueStruct::isEmpty() const
   }
   return false;
 }
+
+bool ValueStruct::equals(const __FlashStringHelper *cmdStr, bool ignoreCase) const
+{
+  if (getValueType() == ValueStruct::ValueType::Unset) { return false; }
+  return equals(String(cmdStr), ignoreCase);
+}
+
+bool ValueStruct::equals(const String& cmdStr, bool ignoreCase) const
+{
+  if (getValueType() == ValueStruct::ValueType::Unset) { return false; }
+
+  if (ignoreCase) {
+    return toString().equalsIgnoreCase(cmdStr);
+  }
+
+  return toString().equals(cmdStr);
+}
+
+#ifndef BUILD_NO_DEBUG
+
+String ValueStruct::debug() const
+{
+  const String normalStr      = toString();
+  const String unformattedStr = toString(true);
+  String logstr               = strformat(
+    F("t:%d,'%s'"),
+    static_cast<int>(getValueType()),
+    normalStr.c_str());
+
+  if (!normalStr.equals(unformattedStr)) {
+    logstr += strformat(F("u:'%s'"), unformattedStr.c_str());
+  }
+
+  if (!operator bool()) {
+    logstr += '!';
+  }
+
+  return logstr;
+}
+
+#endif // ifndef BUILD_NO_DEBUG

@@ -132,6 +132,17 @@ KeyValueStruct::KeyValueStruct(const String& key,
   _values.emplace_back(ValueStruct(std::move(val)));
 }
 
+void KeyValueStruct::clear()
+{
+  _key.clear();
+  _values.clear();
+  _format = Format::Default;
+#if FEATURE_TASKVALUE_UNIT_OF_MEASURE
+  _uomIndex = 0;
+#endif
+  _isArray = false;
+}
+
 KeyValueStruct KeyValueStruct::makeHexFormatted(const __FlashStringHelper *key, uint64_t val, uint8_t minNrDigits)
 {
   KeyValueStruct kv(

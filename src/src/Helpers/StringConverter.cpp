@@ -1676,6 +1676,8 @@ bool GetArgv(const char  *string,
              unsigned int &argc_pos,
              char         separator)
 {
+  // FIXME TD-er: Setting to 0 again, must fix not starting from beginning each time
+//  string_pos = 0; argc_pos = 0;
   int  pos_begin, pos_end;
   bool hasArgument = GetArgvBeginEnd(
     string,
@@ -1784,6 +1786,7 @@ bool GetArgvBeginEnd(const char        *string,
         argc_pos++;
         if (argc_pos == argc)
         {
+          string_pos++;
           return true;
         }
         // new Argument separator found

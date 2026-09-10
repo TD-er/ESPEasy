@@ -30,6 +30,7 @@
 #include "src/Globals/Services.h"
 
 #include "src/Helpers/_Plugin_init.h"
+#include "src/Helpers/CommandArgParser.h"
 #include "src/Helpers/ESPEasy_math.h"
 #include "src/Helpers/ESPEasy_Storage.h"
 #include "src/Helpers/ESPEasy_time_calc.h"
