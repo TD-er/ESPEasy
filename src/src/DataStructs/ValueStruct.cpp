@@ -536,7 +536,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType, bool unformatted) co
       if (getCaseFormat(unformatted) == CaseFormat::KeepCase) {
         return out.write((const uint8_t *)str_val, _size);
       }
-      return formatCase(out, String((const uint8_t *)str_val, _size));
+      return formatCase(out, String((const char *)str_val));
     }
     case ValueStruct::ValueType::FlashString:
     {

@@ -147,7 +147,7 @@ void CommandArgParser::debug(const __FlashStringHelper *comment, uint8_t logLeve
   if (!loglevelActiveFor(logLevel)) { return; }
   String logstr = comment;
 
-  if (logstr.isEmpty()) { logstr += F("CommandArgParser:"); }
+  if (logstr.isEmpty()) { logstr += F("CommandArgParser"); }
   logstr += ':';
 
   if (_hasCommand) {
