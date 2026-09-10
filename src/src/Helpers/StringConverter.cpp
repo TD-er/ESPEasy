@@ -1801,11 +1801,13 @@ bool GetArgvBeginEnd(const char        *string,
 
 bool ContainsAny(const String& str, const __FlashStringHelper * charsToFind)
 {
+  if (str.isEmpty()) return false;
   return ContainsAny(str, String(charsToFind));
 }
 
 bool ContainsAny(const String& str, const String& charsToFind)
 {
+  if (str.isEmpty()) return false;
   const size_t nrCharsToFind = charsToFind.length();
   for (size_t i = 0; i < nrCharsToFind; ++i) {
     if (str.indexOf(charsToFind[i]) != -1) return true;
