@@ -4105,7 +4105,7 @@ To create/register a plugin, you have to :
 
 
 #ifndef FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
-  #if defined(ESP8266) && defined(LIMIT_BUILD_SIZE)
+  #if defined(ESP8266)// && defined(LIMIT_BUILD_SIZE)
     #define FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE 0
   #else
     #define FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE 1
