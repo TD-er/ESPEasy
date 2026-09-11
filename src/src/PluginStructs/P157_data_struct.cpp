@@ -937,8 +937,8 @@ void P157_data_struct::getDisplayLimits(int32_t& lLimit,
   uint8_t dgts = min((uint8_t)8, bufLen);
 
   dgts  -= offset;           // Subtract an offset, used for extra symbol
-  lLimit = -pow10(dgts - 1); // Lowest value we can display - 1
-  uLimit = pow10(dgts);      // Highest value we can display + 1
+  lLimit = -quick_pow10(dgts - 1); // Lowest value we can display - 1
+  uLimit = quick_pow10(dgts);      // Highest value we can display + 1
   // TODO disable log
   // addLog(LOG_LEVEL_INFO, strformat(F("P157: limits: %d digits(%d), lower: %d, upper: %d"), dgts, offset, lLimit, uLimit));
 }

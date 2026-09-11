@@ -1615,7 +1615,7 @@ void parseStandardConversions(String& s, bool useURLencode) {
   #undef SMART_CONV
   
   #if FEATURE_STRING_VARIABLES
-  double tmp{};
+  ESPEASY_RULES_FLOAT_TYPE tmp{};
   #define SMART_CONV(T, FUN) \
   while (getConvertArgumentStr((T), data)) { repl(data, (FUN)); }
   SMART_CONV(F("%c_isnum%"),  String(validDoubleFromString(getCustomStringVar(data.str1), tmp) ? 1 : 0))

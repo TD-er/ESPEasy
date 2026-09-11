@@ -6,9 +6,9 @@
 #include "../Helpers/StringConverter.h"
 #include "../Helpers/StringConverter_Numerical.h"
 
-#define VALUE_STRUCT_SSO_FIRST_CHAR_INDEX  1
+#define VALUE_STRUCT_SSO_FIRST_CHAR_INDEX  2
 #define VALUE_STRUCT_SSO_FIRST_CHAR   bytes_all[VALUE_STRUCT_SSO_FIRST_CHAR_INDEX]
-#define VALUE_STRUCT_SSO_MAX_SIZE          14
+#define VALUE_STRUCT_SSO_MAX_SIZE          13
 
 const ValueStruct INVALID_VALUESTRUCT{};
 
@@ -17,9 +17,10 @@ const ValueStruct INVALID_VALUESTRUCT{};
 // ********************************************************************************
 ValueStruct::~ValueStruct()
 {
-  if (!_isSSO &&
-      (static_cast<ValueStruct::ValueType>(_valueType) == ValueStruct::ValueType::String)
-      && (str_val != nullptr)) {
+  if (!_isSSO && (str_val != nullptr) &&
+      ((static_cast<ValueStruct::ValueType>(_valueType) == ValueStruct::ValueType::String) ||
+       (static_cast<ValueStruct::ValueType>(_valueType) == ValueStruct::ValueType::IP))
+      ) {
     free(str_val);
   }
 }
@@ -49,6 +50,37 @@ ValueStruct ValueStruct::makeBinFormatted(uint64_t val, uint8_t minNrDigits)
   return res;
 }
 
+void ValueStruct::setInt(const uint64_t& val) { this->operator=(ValueStruct(val)); }
+
+void ValueStruct::setInt(const int64_t& val)  { this->operator=(ValueStruct(val)); }
+
+void ValueStruct::setInt(int val)             { this->operator=(ValueStruct(val)); }
+
+#if defined(ESP32) && !defined(__riscv)
+
+void ValueStruct::setInt(int32_t val) { this->operator=(ValueStruct(val)); }
+
+#endif // if defined(ESP32) && !defined(__riscv)
+
+void ValueStruct::setInt(uint32_t val) { this->operator=(ValueStruct(val)); }
+
+#if defined(ESP32) && !defined(__riscv)
+
+void ValueStruct::setInt(size_t val) { this->operator=(ValueStruct(val)); }
+
+#endif // if defined(ESP32) && !defined(__riscv)
+
+void ValueStruct::setIPAddress(const IPAddress& ip)
+{
+  #ifdef ESP8266
+  this->operator=(ValueStruct(ip.toString()));
+  #endif
+  #ifdef ESP32
+  this->operator=(ValueStruct(ip.toString(true)));
+  #endif
+  _valueType = (uint64_t)ValueStruct::ValueType::IP;
+}
+
 void ValueStruct::setPreferredFormat(ValueStruct::PreferredFormat format)
 {
   const auto vtype = getValueType();
@@ -64,7 +96,7 @@ void ValueStruct::setCaseFormat(ValueStruct::CaseFormat caseFormat) { _caseForma
 
 void ValueStruct::clear() {
   if (!_isSSO
-      && (getValueType() == ValueStruct::ValueType::String)
+      && ((getValueType() == ValueStruct::ValueType::String) || (getValueType() == ValueStruct::ValueType::IP))
       && (str_val != nullptr)) {
     free(str_val);
   }
@@ -83,6 +115,16 @@ ValueStruct& ValueStruct::operator=(ValueStruct&& rhs)
 
 ValueStruct& ValueStruct::deepCopy(const ValueStruct& rhs)
 {
+  if (!rhs._isSSO && (rhs.getValueType() == ValueStruct::ValueType::IP))
+  {
+    IPAddress ip;
+
+    if (rhs.toIPAddress(ip)) {
+      this->setIPAddress(ip);
+    }
+    return *this;
+  }
+
   if (!rhs._isSSO && (rhs.getValueType() == ValueStruct::ValueType::String))
   {
     this->operator=(ValueStruct(rhs.toString()));
@@ -100,8 +142,8 @@ ValueStruct::ValueStruct(const bool& val) :
   _valueType((uint64_t)ValueStruct::ValueType::Bool),
   _preferredFormat(0),
   _caseFormat(0),
-  _trimTrailingZeros(0),
   _size(1),
+  _trimTrailingZeros(0),
   u64_val(val ? 1ull : 0ull)
 {}
 
@@ -176,23 +218,34 @@ ValueStruct::ValueStruct(const float& val,
   _valueType((uint64_t)ValueStruct::ValueType::Float),
   _preferredFormat(0),
   _caseFormat(0),
-  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
+  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   f_val(val)
 {}
 
 ValueStruct::ValueStruct(const double& val,
                          uint8_t       nrDecimals,
                          bool          trimTrailingZeros) :
+#if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
   _isSSO(0),
   _valueType((uint64_t)ValueStruct::ValueType::Double),
   _preferredFormat(0),
   _caseFormat(0),
-  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   _nrDecimals((uint64_t)nrDecimals),
   _size(sizeof(val) * 8),
+  _trimTrailingZeros((uint64_t)trimTrailingZeros),
   d_val(val)
+#else // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+  _isSSO(0),
+  _valueType((uint64_t)ValueStruct::ValueType::Float),
+  _preferredFormat(0),
+  _caseFormat(0),
+  _nrDecimals((uint64_t)nrDecimals),
+  _size(sizeof(f_val) * 8),
+  _trimTrailingZeros((uint64_t)trimTrailingZeros),
+  f_val(val)
+#endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
 {}
 
 ValueStruct::ValueStruct(const char*val) :
@@ -311,11 +364,27 @@ ValueStruct ValueStruct::makeFromString(const String& val)
     String trimmedVal(val);
     trimmedVal.trim();
 
-    const bool b_true  = trimmedVal.equalsIgnoreCase(F("true"));
-    const bool b_false = trimmedVal.equalsIgnoreCase(F("false"));
+    if (trimmedVal.isEmpty()) {
+      return ValueStruct(val);
+    }
 
-    if (b_true || b_false) {
+    const bool b_true = trimmedVal.equalsIgnoreCase(F("true"));
+
+    if (b_true || trimmedVal.equalsIgnoreCase(F("false"))) {
       return ValueStruct(b_true);
+    }
+
+    {
+      // Check for IP before checking for other types,
+      // as it would otherwise be stored as a string, not IP type.
+      IPAddress ip;
+
+      if (ip.fromString(val))
+      {
+        ValueStruct v;
+        v.setIPAddress(ip);
+        return v;
+      }
     }
 
     if (ContainsAny(val, F(":#%[](){},\"'`"))) {
@@ -329,7 +398,6 @@ ValueStruct ValueStruct::makeFromString(const String& val)
       negativeValue = true;
     }
   }
-
 
   switch (detectedType)
   {
@@ -429,17 +497,22 @@ int64_t ValueStruct::toInt(int64_t defaultValue) const
       break;
     }
     case ValueStruct::ValueType::Float:
+#if !FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+    case ValueStruct::ValueType::Double:
+#endif
 
       if (isValidFloat(f_val)) {
         return roundf(f_val);
       }
       break;
+#if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
     case ValueStruct::ValueType::Double:
 
       if (isValidDouble(d_val)) {
         return round(d_val);
       }
       break;
+#endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
 
@@ -448,12 +521,13 @@ int64_t ValueStruct::toInt(int64_t defaultValue) const
       }
       break;
     case ValueStruct::ValueType::Unset:
+    case ValueStruct::ValueType::IP:
       break;
   }
   return defaultValue;
 }
 
-double ValueStruct::toFloat() const
+ESPEASY_RULES_FLOAT_TYPE ValueStruct::toFloat(ESPEASY_RULES_FLOAT_TYPE defaultValue) const
 {
   switch (getValueType())
   {
@@ -475,14 +549,33 @@ double ValueStruct::toFloat() const
     }
     case ValueStruct::ValueType::Double:
     {
+#if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
       return d_val;
+#else
+      return f_val;
+#endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
     }
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
+    case ValueStruct::ValueType::IP:
     case ValueStruct::ValueType::Unset:
       break;
   }
-  return 0.0;
+  return defaultValue;
+}
+
+bool ValueStruct::toIPAddress(IPAddress& ip) const
+{
+  switch (getValueType())
+  {
+    case ValueStruct::ValueType::IP:
+    case ValueStruct::ValueType::String:
+    case ValueStruct::ValueType::FlashString:
+      return ip.fromString(this->toString());
+    default:
+      break;
+  }
+  return false;
 }
 
 size_t ValueStruct::print(Print& out) const
@@ -547,7 +640,14 @@ size_t ValueStruct::print(Print& out, ValueType& valueType, bool unformatted) co
       }
       return formatCase(out, String((const __FlashStringHelper *)str_val));
     }
+    case ValueStruct::ValueType::IP:
+    {
+      return out.write((const uint8_t *)str_val, _size);
+    }
     case ValueStruct::ValueType::Float:
+#if !FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+    case ValueStruct::ValueType::Double:
+#endif
     {
       String res;
 
@@ -557,6 +657,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType, bool unformatted) co
       }
       return out.print(res);
     }
+#if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
     case ValueStruct::ValueType::Double:
     {
       String res;
@@ -567,6 +668,7 @@ size_t ValueStruct::print(Print& out, ValueType& valueType, bool unformatted) co
       }
       return out.print(res);
     }
+#endif // if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
     case ValueStruct::ValueType::Int:
     {
       if ((_size > 32) || _minNrDigits) {
@@ -607,7 +709,8 @@ bool ValueStruct::isEmpty() const
   {
     case ValueStruct::ValueType::String:
     case ValueStruct::ValueType::FlashString:
-      return _size == 0;
+    case ValueStruct::ValueType::IP:
+      return _size == 0 || str_val == nullptr;
     case ValueStruct::ValueType::Unset:
       return true;
     default: break;

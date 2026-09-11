@@ -203,6 +203,9 @@ void KeyValueWriter_JSON::writeValue(const ValueStruct& val, bool forceString)
         return;
       }
       break;
+    case ValueStruct::ValueType::IP:
+        pr.print(to_json_value(str, true));
+        return;
   }
   pr.print(to_json_value(str));
 }

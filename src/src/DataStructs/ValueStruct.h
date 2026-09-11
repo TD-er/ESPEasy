@@ -3,6 +3,8 @@
 #include <WString.h>
 #include <Print.h>
 
+#include <IPAddress.h>
+
 // ********************************************************************************
 // ValueStruct
 // ********************************************************************************
@@ -19,6 +21,7 @@ public:
     Unset = 0,
     String,
     FlashString,
+    IP,
     Float,
     Double,
     Int,
@@ -28,20 +31,20 @@ public:
   };
 
   #ifndef BUILD_NO_DEBUG
+
   static const char* toShortStr(ValueType valueType)
   {
-    static const char* shortStrings = "---\0Str\0Fla\0flt\0dbl\0int\0uin\0boo\0";
+    static const char*shortStrings = "---\0Str\0Fla\0IP\0\0flt\0dbl\0int\0uin\0boo\0";
     constexpr uint8_t index_modulo = static_cast<uint8_t>(ValueType::Bool) + 1;
-    const uint8_t index = static_cast<uint8_t>(valueType) % index_modulo;
+    const uint8_t     index        = static_cast<uint8_t>(valueType) % index_modulo;
 
-    return shortStrings + 4*index;
+    return shortStrings + 4 * index;
   }
 
-  #endif
+  #endif // ifndef BUILD_NO_DEBUG
 
   enum class PreferredFormat : uint8_t {
     Default = 0,
-    Dec,
     Bin,
     Hex
 
@@ -90,7 +93,6 @@ public:
               uint8_t       nrDecimals        = 4,
               bool          trimTrailingZeros = false);
 
-
   ValueStruct(const char*val);
 
   ValueStruct(const String& val);
@@ -103,6 +105,20 @@ public:
                                           uint8_t  minNrDigits);
   static ValueStruct     makeBinFormatted(uint64_t val,
                                           uint8_t  minNrDigits);
+
+  void                   setInt(const uint64_t& val);
+  void                   setInt(const int64_t& val);
+
+  void                   setInt(int val);
+#if defined(ESP32) && !defined(__riscv)
+  void                   setInt(int32_t val);
+#endif
+  void                   setInt(uint32_t val);
+#if defined(ESP32) && !defined(__riscv)
+  void                   setInt(size_t val);
+#endif
+
+  void                   setIPAddress(const IPAddress& ip);
 
   ValueStruct::ValueType getValueType() const
   {
@@ -143,35 +159,37 @@ public:
   // If the given string is a numerical, try to detect:
   //  - preferred notation (Hex/Dec/Bin)
   //  - number of decimals
-  static ValueStruct makeFromString(const __FlashStringHelper *val);
-  static ValueStruct makeFromString(const String& val);
+  static ValueStruct       makeFromString(const __FlashStringHelper *val);
+  static ValueStruct       makeFromString(const String& val);
 
-  String             toString(bool unformatted = false) const;
+  String                   toString(bool unformatted = false) const;
 
-  String             toString(ValueType& valueType,
-                              bool       unformatted = false) const;
+  String                   toString(ValueType& valueType,
+                                    bool       unformatted = false) const;
 
-  int64_t            toInt(int64_t defaultValue = 0) const;
+  int64_t                  toInt(int64_t defaultValue = 0) const;
 
-  double             toFloat() const;
+  ESPEASY_RULES_FLOAT_TYPE toFloat(ESPEASY_RULES_FLOAT_TYPE defaultValue = 0) const;
 
-  size_t             print(Print& out) const;
+  bool                     toIPAddress(IPAddress& ip) const;
 
-  bool               isEmpty() const;
+  size_t                   print(Print& out) const;
 
-  bool               isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
+  bool                     isEmpty() const;
 
-  bool               equals(const __FlashStringHelper *cmdStr,
-                            bool                       ignoreCase = false) const;
-  bool               equals(const String& cmdStr,
-                            bool          ignoreCase = false) const;
+  bool                     isSet() const { return getValueType() != ValueStruct::ValueType::Unset; }
 
-  bool               equalsIgnoreCase(const __FlashStringHelper *cmdStr) const { return equals(cmdStr, true); }
+  bool                     equals(const __FlashStringHelper *cmdStr,
+                                  bool                       ignoreCase = false) const;
+  bool                     equals(const String& cmdStr,
+                                  bool          ignoreCase = false) const;
 
-  bool               equalsIgnoreCase(const String& cmdStr) const              { return equals(cmdStr, true); }
+  bool                     equalsIgnoreCase(const __FlashStringHelper *cmdStr) const { return equals(cmdStr, true); }
+
+  bool                     equalsIgnoreCase(const String& cmdStr) const              { return equals(cmdStr, true); }
 
 #ifndef BUILD_NO_DEBUG
-  String             debug() const;
+  String                   debug() const;
 #endif
 
 private:
@@ -191,22 +209,24 @@ private:
       // and decrease max. nr of SSO bytes (VALUE_STRUCT_SSO_MAX_SIZE)
 
       uint64_t _isSSO           : 1;
-      uint64_t _valueType       : 3;
+      uint64_t _valueType       : 4;
       uint64_t _preferredFormat : 2;
       uint64_t _caseFormat      : 2;
+      uint64_t _minNrDigits     : 7; // For printing ints with leading zeroes
 
-      // --- End of 1st byte
+      // --- End of 2nd byte
 
-      uint64_t _trimTrailingZeros : 1;
-      uint64_t _minNrDigits       : 7;  // For printing ints with leading zeroes
       uint64_t _nrDecimals        : 8;
       uint64_t _size              : 16; // Length of string or nr of bits
-      uint64_t unused             : 24;
+      uint64_t _trimTrailingZeros : 1;
+      uint64_t unused             : 23;
 
       union {
-        void    *str_val;
-        float    f_val;
-        double   d_val;
+        void *str_val;
+        float f_val;
+#if FEATURE_USE_DOUBLE_AS_ESPEASY_RULES_FLOAT_TYPE
+        double d_val;
+#endif
         int64_t  i64_val;
         uint64_t u64_val;
 
