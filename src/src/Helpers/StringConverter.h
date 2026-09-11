@@ -26,7 +26,16 @@ String concat(const __FlashStringHelper * str, const String &val);
 String concat(const __FlashStringHelper * str, const __FlashStringHelper *val);
 
 String concat(const __FlashStringHelper * str, const char* val);
+String concat(const __FlashStringHelper * str, const int& val);
+String concat(const __FlashStringHelper * str, const uint32_t& val);
+String concat(int i, const __FlashStringHelper *val);
+String concat(uint32_t i, const __FlashStringHelper *val);
+String concat(const String & str, const __FlashStringHelper *val);
+String concat(const String & str, const String & val);
 String concat(const String & str, const char* val);
+String concat(const String & val, const char& c);
+String concat(String &&val, const char& c);
+
 
 String concat(const char& str, const String &val);
 
@@ -40,7 +49,7 @@ String concat(const __FlashStringHelper * str, const T &val) {
   res.concat(val);
   return res;
 }
-
+/*
 template <typename T>
 String concat(const String& str, const T &val) {
   # ifdef USE_SECOND_HEAP
@@ -51,6 +60,7 @@ String concat(const String& str, const T &val) {
   res.concat(val);
   return res;
 }
+  */
 
 bool remove(String& str, const String& toRemove);
 bool remove(String& str, const __FlashStringHelper * toRemove);

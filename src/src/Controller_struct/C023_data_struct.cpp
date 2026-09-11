@@ -369,10 +369,10 @@ bool C023_data_struct::writeCachedValues(KeyValueWriter*writer, C023_AT_commands
   for (size_t i = static_cast<size_t>(start); i < static_cast<size_t>(end); ++i) {
     const C023_AT_commands::AT_cmd cmd = static_cast<C023_AT_commands::AT_cmd>(i);
 
-    const String value = get(cmd);
+    String value = get(cmd);
 
     if (!value.isEmpty()) {
-      auto kv = C023_AT_commands::getKeyValue(cmd, _loraModule, value, true /*!writer->dataOnlyOutput()*/);
+      auto kv = C023_AT_commands::getKeyValue(cmd, _loraModule, std::move(value), true /*!writer->dataOnlyOutput()*/);
       writer->write(kv);
     }
   }

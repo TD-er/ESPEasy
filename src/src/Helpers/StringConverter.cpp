@@ -60,12 +60,78 @@ String concat(const __FlashStringHelper * str, const __FlashStringHelper *val) {
 }
 
 String concat(const __FlashStringHelper * str, const char* val) {
-  return concat(String(str), String(val));
+  String res;
+  res = str;
+  res += val;
+  return res;
+}
+
+String concat(const __FlashStringHelper * str, const int& val)
+{
+  return concat(str, String(val));
+}
+
+String concat(const __FlashStringHelper * str, const uint32_t& val)
+{
+  return concat(str, String(val));
+}
+
+String concat(int i, const __FlashStringHelper *val)
+{
+  String res;
+  res = i;
+  res += val;
+  return res;
+}
+
+String concat(uint32_t i, const __FlashStringHelper *val)
+{
+  String res;
+  res = i;
+  res += val;
+  return res;
+}
+
+String concat(const String & str, const __FlashStringHelper *val)
+{
+  String res;
+  res = str;
+  res += val;
+  return res;
+}
+
+String concat(const String & str, const String & val)
+{
+  String res;
+  reserve_special(res, str.length() + val.length());
+  res.concat(str);
+  res.concat(val);
+
+  return res;
 }
 
 String concat(const String & str, const char* val)
 {
-  return concat(str, String(val));
+  String res;
+  res = str;
+  res += val;
+  return res;
+}
+
+String concat(const String &val, const char& c)
+{
+  String res;
+  res.reserve(val.length() + 1);
+  res = val;
+  res += c;
+  return res;
+}
+
+String concat(String &&val, const char& c)
+{
+  String res(std::move(val));
+  res += c;
+  return res;
 }
 
 String concat(const char& str, const String &val)

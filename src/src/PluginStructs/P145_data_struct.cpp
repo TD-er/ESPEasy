@@ -760,7 +760,7 @@ void P145_data_struct::dump() const
  */
 
 /**************************************************************************/
-const String P145_data_struct::getTypeName(int stype)
+const __FlashStringHelper * P145_data_struct::getTypeName(int stype)
 {
   switch (sensorDefs[stype].name)
   {
@@ -787,7 +787,7 @@ const String P145_data_struct::getTypeName(int stype)
  */
 
 /**************************************************************************/
-const String P145_data_struct::getGasName(int stype)
+const __FlashStringHelper * P145_data_struct::getGasName(int stype)
 {
   switch (sensorDefs[stype].gas)
   {
