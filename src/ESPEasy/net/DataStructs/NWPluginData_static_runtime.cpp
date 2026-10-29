@@ -137,6 +137,7 @@ void NWPluginData_static_runtime::clear(networkIndex_t networkIndex)
 
   _connectionFailures = 0;
 
+  _useStaticIP = false;
   _ip      = INADDR_NONE;
   _gateway = INADDR_NONE;
   _sn      = INADDR_NONE;

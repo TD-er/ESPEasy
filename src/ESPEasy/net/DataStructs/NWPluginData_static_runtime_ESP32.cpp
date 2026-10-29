@@ -92,9 +92,9 @@ bool NWPluginData_static_runtime::hasIPv6() const
 void NWPluginData_static_runtime::mark_start()
 {
   //  if (!_startStopStats.setOn()) { return; }
-  _startStopStats.setOn();
 
   if (!_netif) { return; }
+  _startStopStats.setOn();
 
   // AP IP and DHCP server are configured via softAPConfig().
   // Calling config(0,0,0) on the AP netif enables DHCP client and breaks AP DHCP.
