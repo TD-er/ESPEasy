@@ -293,7 +293,7 @@ void doWifiScan(bool async, uint8_t channel) {
 #  else // if CONFIG_SOC_WIFI_SUPPORT_5G
     WiFi.setScanTimeout(14 * max_ms_per_chan * 2);
 #  endif // if CONFIG_SOC_WIFI_SUPPORT_5G
-    WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan /*, channel */);
+    WiFi.scanNetworks(async, show_hidden, passive, max_ms_per_chan , channel);
 
     if (!async) {
       FeedSW_watchdog();

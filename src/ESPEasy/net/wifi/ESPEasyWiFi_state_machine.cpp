@@ -137,10 +137,15 @@ void ESPEasyWiFi_t::loop_internal()
 
         // No known candidates, so need to scan first.
         if (WifiIsAP(WiFi.getMode())) {
-          // TODO TD-er: Must check if any client is connected.
-          // If not, then we can disable AP mode and switch to WiFi_STA_State_e::STA_Scanning
-          setState(WiFi_STA_State_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
-          break;
+          if (WiFi.softAPgetStationNum()) {
+            // TODO TD-er: Must check if any client is connected.
+            // If not, then we can disable AP mode and switch to WiFi_STA_State_e::STA_Scanning
+            setState(WiFi_STA_State_e::STA_AP_Scanning, WIFI_STATE_MACHINE_STA_AP_SCANNING_TIMEOUT);
+            break;
+          } else {
+            setAP(false);
+            // TODO TD-er: Must also turn back on when we're done scanning?
+          }
         }
         setState(WiFi_STA_State_e::STA_Scanning, WIFI_STATE_MACHINE_STA_SCANNING_TIMEOUT);
       }
@@ -278,7 +283,8 @@ bool ESPEasyWiFi_t::connected() const
 void ESPEasyWiFi_t::disconnect() { doWiFiDisconnect(); }
 
 void ESPEasyWiFi_t::setState(WiFi_STA_State_e newState, uint32_t timeout) {
-  if (newState == _state) { return; }
+  if (newState == _state && 
+      newState != WiFi_STA_State_e::STA_AP_Scanning) { return; }
 
   const WiFi_STA_State_e oldState = _state;
 
